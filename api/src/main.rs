@@ -1,0 +1,68 @@
+use axum::Router;
+use axum::routing::get;
+use axum::http::StatusCode;
+use anyhow::Context;
+use axum::response::IntoResponse;
+use tokio::signal;
+use infrastructure::init_pool;
+use application::user::read::list_users;
+
+
+// https://github.com/tokio-rs/axum/blob/main/examples/anyhow-error-response/src/main.rs
+struct AppError(anyhow::Error);
+
+impl From<anyhow::Error> for AppError {
+    fn from(value: anyhow::Error) -> Self {
+        Self(value)
+    }
+}
+
+impl IntoResponse for AppError {
+    fn into_response(self) -> axum::response::Response {
+        (StatusCode::INTERNAL_SERVER_ERROR, self.0.to_string()).into_response()
+    }
+}
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()>{
+    let pool = init_pool();
+
+    let app = Router::new()
+        .route("/users", get(list_users))
+        .layer(tower_http::catch_panic::CatchPanicLayer::new())
+        .with_state(pool);
+
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3001").await.context("failed to bind TCP listener")?;
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await
+        .context("axum:serve failed")?;
+
+    Ok(())
+}
+
+// https://github.com/tokio-rs/axum/blob/main/examples/graceful-shutdown/src/main.rs
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+}
+

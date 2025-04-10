@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: ohmygit_db
+    environment:
+      POSTGRES_DB: ohmygit
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+#  diesel:
+#   build:
+#      context: ./infrastructure
+#    environment:
+#      DATABASE_URL: postgres://admin:password@localhost:5432/ohmygit
+#    depends_on:
+#      - db
+#    command: diesel migration run
+
+#  seed:
+#    image: postgres:latest
+#    depends_on:
+#      - db
+#    volumes:
+#      - ./seed:/seed
+#    entrypoint: ["/bin/bash", "-c"]
+#    command: >
+#      "sleep 2 &&
+#      psql -U admin -d ohmygit -h db -f /seed/seed.sql"
+
+volumes:
+  pgdata:
