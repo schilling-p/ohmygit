@@ -4,7 +4,7 @@ use axum::http::StatusCode;
 use anyhow::Context;
 use axum::response::IntoResponse;
 use tokio::signal;
-use infrastructure::init_pool;
+use infrastructure::{init_pool, run_migrations};
 use application::user::read::list_users;
 
 
@@ -25,7 +25,9 @@ impl IntoResponse for AppError {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()>{
-    let pool = init_pool();
+    // TODO: handle the error case better than with unwrap()
+    run_migrations().unwrap();
+    let pool = init_pool();      
 
     let app = Router::new()
         .route("/users", get(list_users))
@@ -65,4 +67,3 @@ async fn shutdown_signal() {
         _ = terminate => {},
     }
 }
-
