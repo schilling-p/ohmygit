@@ -1,8 +1,9 @@
 use axum::Router;
 use axum::routing::get;
 use axum::http::StatusCode;
-use anyhow::Context;
 use axum::response::IntoResponse;
+use axum::Json;
+use anyhow::Context;
 use tokio::signal;
 use infrastructure::{init_pool, run_migrations};
 use application::user::read::list_users;
@@ -11,6 +12,11 @@ use tower_http::cors::CorsLayer;
 
 // https://github.com/tokio-rs/axum/blob/main/examples/anyhow-error-response/src/main.rs
 struct AppError(anyhow::Error);
+
+#[derive(serde::Serialize)]
+struct HealthResponse {
+    message: &'static str,
+}
 
 impl From<anyhow::Error> for AppError {
     fn from(value: anyhow::Error) -> Self {
@@ -28,9 +34,10 @@ impl IntoResponse for AppError {
 async fn main() -> anyhow::Result<()>{
     // TODO: handle the error case better than with unwrap()
     run_migrations().unwrap();
-    let pool = init_pool();      
+    let pool = init_pool();
 
     let app = Router::new()
+        .route("/health", get(healthcheck))
         .route("/users", get(list_users))
         .layer(tower_http::catch_panic::CatchPanicLayer::new())
         // TODO: remove or find better way for production than this CorsLayer
@@ -42,7 +49,7 @@ async fn main() -> anyhow::Result<()>{
         .with_graceful_shutdown(shutdown_signal())
         .await
         .context("axum:serve failed")?;
-    
+
     println!("Server has started");
 
     Ok(())
@@ -71,4 +78,8 @@ async fn shutdown_signal() {
         _ = ctrl_c => {},
         _ = terminate => {},
     }
+}
+
+async fn healthcheck() -> impl IntoResponse {
+    Json(HealthResponse {message: "Ok"})
 }
