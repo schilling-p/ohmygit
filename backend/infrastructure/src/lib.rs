@@ -8,12 +8,8 @@ use diesel_migrations::{embed_migrations, MigrationHarness, EmbeddedMigrations};
 
 pub type DbPool = Pool;
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations/");
-
 pub fn init_pool() -> DbPool {
-    assert!(
-        dotenv().ok().is_some(),
-        ".env file could not be loaded"
-    );
+    dotenv().ok();
 
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let manager = Manager::new(db_url, Runtime::Tokio1);
@@ -30,10 +26,7 @@ pub fn run_migrations() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
 }
 
 fn establish_database_connection() -> PgConnection {
-    assert!(
-        dotenv().ok().is_some(),
-        ".env file could not be loaded"
-    );
+    dotenv().ok();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
     PgConnection::establish(&database_url)

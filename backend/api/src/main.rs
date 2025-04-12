@@ -6,6 +6,7 @@ use axum::response::IntoResponse;
 use tokio::signal;
 use infrastructure::{init_pool, run_migrations};
 use application::user::read::list_users;
+use tower_http::cors::CorsLayer;
 
 
 // https://github.com/tokio-rs/axum/blob/main/examples/anyhow-error-response/src/main.rs
@@ -32,13 +33,17 @@ async fn main() -> anyhow::Result<()>{
     let app = Router::new()
         .route("/users", get(list_users))
         .layer(tower_http::catch_panic::CatchPanicLayer::new())
+        // TODO: remove or find better way for production than this CorsLayer
+        .layer(CorsLayer::permissive())
         .with_state(pool);
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3001").await.context("failed to bind TCP listener")?;
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.context("failed to bind TCP listener")?;
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await
         .context("axum:serve failed")?;
+    
+    println!("Server has started");
 
     Ok(())
 }
