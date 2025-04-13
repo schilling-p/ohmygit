@@ -1,5 +1,5 @@
-use diesel::{Queryable, QueryableByName, Selectable};
-use serde::{Serialize};
+use diesel::{Insertable, Queryable, QueryableByName, Selectable};
+use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use crate::schema::users;
 
@@ -11,4 +11,12 @@ pub struct User {
     pub email: String,
     pub hashed_pw: String,
     pub created_at: DateTime<Utc>,
+}
+
+#[derive(Deserialize, Insertable)]
+#[diesel(table_name = users)]
+pub struct NewUser {
+    pub name: String,
+    pub email: String,
+    pub hashed_pw: String,
 }

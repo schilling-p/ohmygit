@@ -3,6 +3,7 @@ use diesel::prelude::*;
 use diesel::SelectableHelper;
 use domain::models::User;
 use domain::schema::users;
+use crate::user::internal_error;
 
 pub async fn list_users(
     State(pool): State<deadpool_diesel::postgres::Pool>,
@@ -14,12 +15,4 @@ pub async fn list_users(
         .map_err(internal_error)?
         .map_err(internal_error)?;
     Ok(Json(res))
-}
-
-
-fn internal_error<E>(err: E) -> (StatusCode, String)
-where
-    E: std::error::Error,
-{
-    (StatusCode::INTERNAL_SERVER_ERROR, err.to_string())
 }
