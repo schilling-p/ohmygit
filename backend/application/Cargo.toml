@@ -6,8 +6,10 @@ edition = "2024"
 [dependencies]
 domain = { path = "../domain" }
 infrastructure = { path = "../infrastructure" }
+shared = { path = "../shared" }
 
 axum = "0.8.1"
 tokio = { version = "1.44.1", features = ["full"] }
 diesel = { version = "2.2.8", features = ["postgres"] }
 deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
+rand_core = { version = "0.6", features = ["std"] }

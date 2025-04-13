@@ -1,5 +1,5 @@
 use axum::Router;
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
@@ -7,6 +7,7 @@ use anyhow::Context;
 use tokio::signal;
 use infrastructure::{init_pool, run_migrations};
 use application::user::read::list_users;
+use application::user::create::create_user;
 use tower_http::cors::CorsLayer;
 
 
@@ -38,6 +39,7 @@ async fn main() -> anyhow::Result<()>{
 
     let app = Router::new()
         .route("/health", get(healthcheck))
+        .route("/new_user", post(create_user))
         .route("/users", get(list_users))
         .layer(tower_http::catch_panic::CatchPanicLayer::new())
         // TODO: remove or find better way for production than this CorsLayer

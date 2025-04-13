@@ -11,5 +11,18 @@ window.addEventListener("DOMContentLoaded", () => {
             document.getElementById("status-output").textContent = error.message
         }
     });
+
+    const loginForm = document.getElementById("login-form");
+    if (loginForm) {
+        loginForm.addEventListener("submit", handleLogin);
+    }
+
+    const signupForm = document.getElementById("signup-form");
+    if (signupForm) {
+        signupForm.addEventListener("submit", handleSignup);
+    }
 });
+
+function handleLogin() {}
+function handleSignup() {}
 

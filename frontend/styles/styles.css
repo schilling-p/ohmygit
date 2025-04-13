@@ -52,6 +52,12 @@ input {
     box-sizing: border-box;
 }
 
+input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.2);
+}
+
 button {
     background-color: #4CAF50;
     color: white;
@@ -61,8 +67,25 @@ button {
     cursor: pointer;
     font-size: 16px;
     width: 100%;
+    transition: background-color 0.3s ease;
 }
 
 button:hover {
     background-color: #45a049;
+}
+
+.form-footer {
+    margin-top: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+.form-footer a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
 }
