@@ -8,6 +8,7 @@ use tokio::signal;
 use infrastructure::{init_pool, run_migrations};
 use application::user::read::list_users;
 use application::user::create::create_user;
+use application::user::login::login_user;
 use tower_http::cors::CorsLayer;
 
 
@@ -41,6 +42,7 @@ async fn main() -> anyhow::Result<()>{
         .route("/health", get(healthcheck))
         .route("/new_user", post(create_user))
         .route("/users", get(list_users))
+        .route("/login", post(login_user))
         .layer(tower_http::catch_panic::CatchPanicLayer::new())
         // TODO: remove or find better way for production than this CorsLayer
         .layer(CorsLayer::permissive())
