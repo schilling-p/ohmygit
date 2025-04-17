@@ -9,10 +9,6 @@ use application::user::read::list_users;
 use application::user::create::create_user;
 use application::user::login::login_user;
 use tower_http::cors::CorsLayer;
-use error::AppError;
-
-
-// https://github.com/tokio-rs/axum/blob/main/examples/anyhow-error-response/src/main.rs
 
 #[derive(serde::Serialize)]
 struct HealthResponse {
