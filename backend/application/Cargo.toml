@@ -7,9 +7,9 @@ edition = "2024"
 domain = { path = "../domain" }
 infrastructure = { path = "../infrastructure" }
 shared = { path = "../shared" }
+error = { path = "../error" }
 
 axum = "0.8.1"
-tokio = { version = "1.44.1", features = ["full"] }
+axum-macros = "0.5.0"
 diesel = { version = "2.2.8", features = ["postgres"] }
 deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
-rand_core = { version = "0.6", features = ["std"] }

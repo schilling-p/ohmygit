@@ -7,7 +7,7 @@ use domain::models::{NewUser, User};
 use domain::schema::users;
 use crate::user::internal_error;
 use shared::crypto::hash_password;
-
+use error::AppError;
 
 pub async fn create_user(State(pool): State<deadpool_diesel::postgres::Pool>, Json(new_user): Json<NewUser>,) -> Result<impl IntoResponse, (StatusCode, String)> {
     let mut user = new_user;

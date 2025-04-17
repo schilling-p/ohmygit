@@ -1,6 +1,5 @@
 use axum::Router;
 use axum::routing::{get, post};
-use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
 use anyhow::Context;
@@ -10,26 +9,14 @@ use application::user::read::list_users;
 use application::user::create::create_user;
 use application::user::login::login_user;
 use tower_http::cors::CorsLayer;
+use error::AppError;
 
 
 // https://github.com/tokio-rs/axum/blob/main/examples/anyhow-error-response/src/main.rs
-struct AppError(anyhow::Error);
 
 #[derive(serde::Serialize)]
 struct HealthResponse {
     message: &'static str,
-}
-
-impl From<anyhow::Error> for AppError {
-    fn from(value: anyhow::Error) -> Self {
-        Self(value)
-    }
-}
-
-impl IntoResponse for AppError {
-    fn into_response(self) -> axum::response::Response {
-        (StatusCode::INTERNAL_SERVER_ERROR, self.0.to_string()).into_response()
-    }
 }
 
 #[tokio::main]

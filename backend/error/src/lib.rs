@@ -1,0 +1,66 @@
+use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use diesel::result::Error as DieselError;
+use serde_json::json;
+
+#[derive(Debug)]
+pub enum AppError {
+    NotFound(String),
+    DatabaseError(DieselError),
+    UnexpectedError(String),
+    PoolError(deadpool_diesel::PoolError),
+    JoinError(tokio::task::JoinError),
+}
+
+impl From<DieselError> for AppError {
+    fn from(err: DieselError) -> Self {
+        match err {
+            DieselError::NotFound => AppError::NotFound("Not Found".to_string()),
+            other => AppError::DatabaseError(other),
+        }
+    }
+}
+
+impl From<tokio::task::JoinError> for AppError {
+    fn from(err: tokio::task::JoinError) -> Self {
+        AppError::JoinError(err)
+    }
+}
+
+impl From<anyhow::Error> for AppError {
+    fn from(err: anyhow::Error) -> Self {
+        AppError::UnexpectedError(err.to_string())
+    }
+}
+
+impl From<deadpool_diesel::PoolError> for AppError {
+    fn from(err: deadpool_diesel::PoolError) -> Self {
+        AppError::PoolError(err)
+    }
+}
+
+impl IntoResponse for AppError {
+    fn into_response(self) -> Response {
+        match self {
+            AppError::NotFound(msg) => {
+                let body = Json(json!({"error": msg}));
+                (StatusCode::NOT_FOUND, body).into_response()
+            }
+            AppError::DatabaseError(err) => {
+                let body = Json(json!({"error": err.to_string()}));
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            }
+            AppError::UnexpectedError(msg) => {
+                let body = Json(json!({"error": msg}));
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            }
+            AppError::PoolError(err) => {
+                let body = Json(json!({"error": err.to_string()}));
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            }
+            AppError::JoinError(err) => {
+                let body = Json(json!({"error": err.to_string()}));
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            }
+        }
+    }
+}

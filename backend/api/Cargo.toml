@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 infrastructure = { path = "../infrastructure" }
 application = { path = "../application" }
+error = { path = "../error" }
 
 axum = "0.8.1"
 tokio = { version = "1.44.1", features = ["full"] }

@@ -21,3 +21,9 @@ pub struct NewUser {
     pub email: String,
     pub hashed_pw: String,
 }
+
+#[derive(Deserialize)]
+pub struct LoginRequest {
+    pub email: String,
+    pub password: String,
+}
