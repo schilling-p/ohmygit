@@ -24,7 +24,7 @@ loginForm.addEventListener("submit", async (event) => {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({email: email, hashed_pw: password}),
+            body: JSON.stringify({email: email, password: password}),
         });
 
         const data = await response.json();
@@ -36,7 +36,7 @@ loginForm.addEventListener("submit", async (event) => {
             statusText.textContent = data.message;
         }
     } catch (err) {
-        console.error("Sign Up error: ", err);
-        statusText.textContent = "An error occurred during sign up.";
+        console.error("Log In error: ", err);
+        statusText.textContent = "An error occurred during login .";
     }
 });

@@ -28,6 +28,7 @@ pub async fn find_user_by_email(
 
     // TODO: solve this redeclaration in a Rust way
     let user_email = login_request.email.clone();
+    tracing::debug!("user_email: {}", user_email);
     let conn = pool.get().await.map_err(AppError::from)?;
     let res = conn
         .interact(|conn| users.filter(email.eq(user_email)).select(User::as_select()).first(conn))
