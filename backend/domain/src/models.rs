@@ -14,7 +14,7 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Deserialize, Insertable)]
+#[derive(Deserialize, Insertable, Debug, Clone)]
 #[diesel(table_name = users)]
 pub struct NewUser {
     pub name: String,
@@ -22,7 +22,7 @@ pub struct NewUser {
     pub hashed_pw: String,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct LoginRequest {
     pub email: String,
     pub password: String,

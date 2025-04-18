@@ -28,6 +28,7 @@ loginForm.addEventListener("submit", async (event) => {
         });
 
         const data = await response.json();
+        console.log(data)
 
         if (response.ok) {
             statusText.textContent = "Account created successfully!";

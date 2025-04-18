@@ -1,6 +1,7 @@
 use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
 use diesel::result::Error as DieselError;
 use serde_json::json;
+use argon2::password_hash::Error as PasswordHashError;
 
 #[derive(Debug)]
 pub enum AppError {
@@ -9,6 +10,13 @@ pub enum AppError {
     UnexpectedError(String),
     PoolError(deadpool_diesel::PoolError),
     JoinError(tokio::task::JoinError),
+    PasswordHashError(PasswordHashError),
+}
+
+impl From<PasswordHashError> for AppError {
+    fn from(err: PasswordHashError) -> Self {
+        AppError::PasswordHashError(err)
+    }
 }
 
 impl From<DieselError> for AppError {
@@ -58,6 +66,10 @@ impl IntoResponse for AppError {
                 (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
             }
             AppError::JoinError(err) => {
+                let body = Json(json!({"error": err.to_string()}));
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            }
+            AppError::PasswordHashError(err) => {
                 let body = Json(json!({"error": err.to_string()}));
                 (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
             }
