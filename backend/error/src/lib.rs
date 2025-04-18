@@ -6,6 +6,7 @@ use argon2::password_hash::Error as PasswordHashError;
 #[derive(Debug)]
 pub enum AppError {
     NotFound(String),
+    EmailAlreadyExists,
     DatabaseError(DieselError),
     UnexpectedError(String),
     PoolError(deadpool_diesel::PoolError),
@@ -70,8 +71,12 @@ impl IntoResponse for AppError {
                 (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
             }
             AppError::PasswordHashError(err) => {
-                let body = Json(json!({"error": err.to_string()}));
+                let body = Json(json!({"error": "password_hash_error", "message": err.to_string()}));
                 (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            }
+            AppError::EmailAlreadyExists => {
+                let body = Json(json!({"error": "email_already_exists"}));
+                (StatusCode::CONFLICT, body).into_response()
             }
         }
     }

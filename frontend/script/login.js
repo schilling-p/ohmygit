@@ -33,9 +33,12 @@ loginForm.addEventListener("submit", async (event) => {
         if (response.ok) {
             statusText.textContent = "Account created successfully!";
             window.location.href = "dashboard.html";
+        } else if (response.status === 409) {
+            statusText.textContent = data.error || data.message || "Email already exists.";
         } else {
-            statusText.textContent = data.message;
+            statusText.textContent = data.message || "An error occurred during sign up. Please try again.";
         }
+
     } catch (err) {
         console.error("Log In error: ", err);
         statusText.textContent = "An error occurred during login .";

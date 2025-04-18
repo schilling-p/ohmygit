@@ -15,11 +15,14 @@ pub struct LoginResponse {
 
 #[debug_handler]
 pub async fn login_user(pool: State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<Json<LoginResponse>, AppError> {
-    // TODO: clean up the clone()
-    let login_request_password = login_request.password.clone();
+    // TODO: don't do clone() , requires new signature of find_user_by_email()
+    match find_user_by_email(&pool, login_request.email.clone()).await {
+        Ok(_) => return Err(AppError::EmailAlreadyExists),
+        Err(_) => {},
+    }
 
-    let user = find_user_by_email(&pool, login_request).await?;
-    verify_password(&login_request_password, &user.hashed_pw).unwrap();
+    let user = find_user_by_email(&pool, login_request.email).await?;
+    verify_password(&login_request.password, &user.hashed_pw)?;
 
     Ok(Json(LoginResponse { message: "Login successful".to_string() }))
 }

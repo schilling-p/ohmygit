@@ -13,7 +13,6 @@ use application::user::create::create_user;
 use application::user::login::login_user;
 use tower_http::cors::CorsLayer;
 use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
-use tower_http::trace::{DefaultOnResponse};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tracing::{info_span, Span};
 
