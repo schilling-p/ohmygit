@@ -6,16 +6,17 @@ use axum::Json;
 use axum::http::Request;
 use axum::extract::MatchedPath;
 use anyhow::Context;
-use tokio::signal;
+use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tracing::{info_span, Span};
+
 use infrastructure::{init_pool, run_migrations};
 use application::user::read::list_users;
 use application::user::create::create_user;
 use application::user::login::login_user;
-use tower_http::cors::CorsLayer;
-use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use tracing::{info_span, Span};
 use domain::models::HealthResponse;
+use shared::graceful::shutdown_signal;
+use tower_http::cors::CorsLayer;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()>{
@@ -72,31 +73,6 @@ async fn main() -> anyhow::Result<()>{
         .context("axum:serve failed")?;
 
     Ok(())
-}
-
-// https://github.com/tokio-rs/axum/blob/main/examples/graceful-shutdown/src/main.rs
-async fn shutdown_signal() {
-    let ctrl_c = async {
-        signal::ctrl_c()
-            .await
-            .expect("failed to install Ctrl+C handler");
-    };
-
-    #[cfg(unix)]
-    let terminate = async {
-        signal::unix::signal(signal::unix::SignalKind::terminate())
-            .expect("failed to install signal handler")
-            .recv()
-            .await;
-    };
-
-    #[cfg(not(unix))]
-    let terminate = std::future::pending::<()>();
-
-    tokio::select! {
-        _ = ctrl_c => {},
-        _ = terminate => {},
-    }
 }
 
 async fn healthcheck() -> impl IntoResponse {
