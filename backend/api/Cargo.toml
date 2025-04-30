@@ -6,12 +6,13 @@ edition = "2024"
 [dependencies]
 infrastructure = { path = "../infrastructure" }
 application = { path = "../application" }
-error = { path = "../error" }
+domain = {path = "../domain"}
+shared = { path = "../shared" }
 
 axum = "0.8.1"
 tokio = { version = "1.44.1", features = ["full"] }
-serde = { version = "1.0.219", features = ["derive"] }
 anyhow = "1.0.97"
 tower-http = { version = "0.6.2", features = ["catch-panic", "cors", "trace"] }
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 tracing = "0.1.41"
+deadpool-diesel = { version = "0.6.1", features = ["postgres"] }

@@ -17,6 +17,7 @@ services:
     image: nginx:alpine
     volumes:
       - ./frontend:/usr/share/nginx/html
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
     container_name: ohmygit_frontend
     ports:
       - "8080:80"

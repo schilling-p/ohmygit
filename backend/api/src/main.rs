@@ -1,29 +1,21 @@
+
 use std::time::Duration;
-use axum::Router;
-use axum::routing::{get, post};
-use axum::response::{IntoResponse, Response};
-use axum::Json;
+use axum::response::Response;
 use axum::http::Request;
 use axum::extract::MatchedPath;
 use anyhow::Context;
-use tokio::signal;
-use infrastructure::{init_pool, run_migrations};
-use application::user::read::list_users;
-use application::user::create::create_user;
-use application::user::login::login_user;
-use tower_http::cors::CorsLayer;
 use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tracing::{info_span, Span};
+use tower_http::cors::CorsLayer;
 
-#[derive(serde::Serialize)]
-struct HealthResponse {
-    message: &'static str,
-}
+use infrastructure::{init_pool, run_migrations};
+use shared::graceful::shutdown_signal;
+mod routes;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()>{
-    
+
     let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {"debug, tower_http=debug".into()});
     tracing_subscriber::registry()
         .with(filter)
@@ -34,11 +26,7 @@ async fn main() -> anyhow::Result<()>{
     run_migrations().unwrap();
     let pool = init_pool();
 
-    let app = Router::new()
-        .route("/health", get(healthcheck))
-        .route("/new_user", post(create_user))
-        .route("/users", get(list_users))
-        .route("/login", post(login_user))
+    let app = routes::create_routes(pool)
         .layer(tower_http::catch_panic::CatchPanicLayer::new())
         // TODO: remove or find better way for production than this CorsLayer
         .layer(CorsLayer::permissive())
@@ -65,44 +53,14 @@ async fn main() -> anyhow::Result<()>{
             .on_failure(|error: ServerErrorsFailureClass, latency: Duration, span: &Span| {
                 tracing::error!(?error, "Request failed after {:?}", latency.as_millis());
             })
-        )
-        .with_state(pool);
+        );
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.context("failed to bind TCP listener")?;
-    tracing::debug!("listening on {}", listener.local_addr()?);
+    tracing::debug!("Listening on: {}", listener.local_addr()?);
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await
         .context("axum:serve failed")?;
 
     Ok(())
-}
-
-// https://github.com/tokio-rs/axum/blob/main/examples/graceful-shutdown/src/main.rs
-async fn shutdown_signal() {
-    let ctrl_c = async {
-        signal::ctrl_c()
-            .await
-            .expect("failed to install Ctrl+C handler");
-    };
-
-    #[cfg(unix)]
-    let terminate = async {
-        signal::unix::signal(signal::unix::SignalKind::terminate())
-            .expect("failed to install signal handler")
-            .recv()
-            .await;
-    };
-
-    #[cfg(not(unix))]
-    let terminate = std::future::pending::<()>();
-
-    tokio::select! {
-        _ = ctrl_c => {},
-        _ = terminate => {},
-    }
-}
-
-async fn healthcheck() -> impl IntoResponse {
-    Json(HealthResponse {message: "Ok"})
 }

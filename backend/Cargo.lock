@@ -54,9 +54,10 @@ dependencies = [
  "anyhow",
  "application",
  "axum",
- "error",
+ "deadpool-diesel",
+ "domain",
  "infrastructure",
- "serde",
+ "shared",
  "tokio",
  "tower-http",
  "tracing",
@@ -1101,6 +1102,7 @@ dependencies = [
  "error",
  "password-hash",
  "rand_core",
+ "tokio",
 ]
 
 [[package]]

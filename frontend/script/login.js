@@ -3,9 +3,11 @@ import {API_BASE_URL} from "./common.js";
 const check_status_button = document.getElementById("check-status")
 const loginForm = document.getElementById("loginForm");
 const statusText = document.getElementById("status-output");
+const loginRoute = "login";
+const healthRoute = "health";
 check_status_button.addEventListener("click", async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/health`);
+        const response = await fetch(`${API_BASE_URL}/${healthRoute}`);
         const data = await response.json();
         statusText.textContent = data.message
     } catch (error) {
@@ -19,7 +21,8 @@ loginForm.addEventListener("submit", async (event) => {
     const password = document.getElementById("password").value;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/login`, {
+        console.log("Sending login request to: ", `${API_BASE_URL}/users/${loginRoute}`);
+        const response = await fetch(`${API_BASE_URL}/users/${loginRoute}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

@@ -27,3 +27,8 @@ pub struct LoginRequest {
     pub email: String,
     pub password: String,
 }
+
+#[derive(serde::Serialize)]
+pub struct HealthResponse {
+    pub message: &'static str,
+}

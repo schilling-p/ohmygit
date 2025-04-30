@@ -1,6 +1,5 @@
 import {API_BASE_URL} from "./common.js";
-
-const signupMessage = document.getElementById("signup-output");
+const signupRoute = "signup";
 document.getElementById("signupForm").addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -10,7 +9,8 @@ document.getElementById("signupForm").addEventListener("submit", async (event) =
     const signupMessage = document.getElementById("signup-output");
 
     try {
-        const response = await fetch(`${API_BASE_URL}/new_user`, {
+        console.log("Sending sign up request to: ", `${API_BASE_URL}/users/${signupRoute}`);
+        const response = await fetch(`${API_BASE_URL}/users/${signupRoute}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: username, email: email, hashed_pw: password }),
