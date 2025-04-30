@@ -74,6 +74,7 @@ dependencies = [
  "domain",
  "error",
  "infrastructure",
+ "log",
  "serde",
  "shared",
  "tracing",

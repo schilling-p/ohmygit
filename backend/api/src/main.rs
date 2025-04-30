@@ -23,16 +23,10 @@ struct HealthResponse {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()>{
-
+    
+    let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {"debug, tower_http=debug".into()});
     tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                format!(
-                    "{}=debug,tower_http=debug,axum::rejection=trace",
-                    env!("CARGO_CRATE_NAME")
-                ).into()
-            }),
-        )
+        .with(filter)
         .with(tracing_subscriber::fmt::layer())
         .init();
 
@@ -80,8 +74,6 @@ async fn main() -> anyhow::Result<()>{
         .with_graceful_shutdown(shutdown_signal())
         .await
         .context("axum:serve failed")?;
-
-    println!("Server has started");
 
     Ok(())
 }
