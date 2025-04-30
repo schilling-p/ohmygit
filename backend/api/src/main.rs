@@ -15,15 +15,11 @@ use tower_http::cors::CorsLayer;
 use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tracing::{info_span, Span};
-
-#[derive(serde::Serialize)]
-struct HealthResponse {
-    message: &'static str,
-}
+use domain::models::HealthResponse;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()>{
-    
+
     let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {"debug, tower_http=debug".into()});
     tracing_subscriber::registry()
         .with(filter)
@@ -69,7 +65,7 @@ async fn main() -> anyhow::Result<()>{
         .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.context("failed to bind TCP listener")?;
-    tracing::debug!("listening on {}", listener.local_addr()?);
+    tracing::debug!("Listening on: {}", listener.local_addr()?);
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await

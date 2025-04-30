@@ -54,7 +54,7 @@ dependencies = [
  "anyhow",
  "application",
  "axum",
- "error",
+ "domain",
  "infrastructure",
  "serde",
  "tokio",
