@@ -1,22 +1,17 @@
+
 use std::time::Duration;
-use axum::Router;
-use axum::routing::{get, post};
-use axum::response::{IntoResponse, Response};
-use axum::Json;
+use axum::response::Response;
 use axum::http::Request;
 use axum::extract::MatchedPath;
 use anyhow::Context;
 use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tracing::{info_span, Span};
+use tower_http::cors::CorsLayer;
 
 use infrastructure::{init_pool, run_migrations};
-use application::user::read::list_users;
-use application::user::create::create_user;
-use application::user::login::login_user;
-use domain::models::HealthResponse;
 use shared::graceful::shutdown_signal;
-use tower_http::cors::CorsLayer;
+mod routes;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()>{
@@ -31,11 +26,7 @@ async fn main() -> anyhow::Result<()>{
     run_migrations().unwrap();
     let pool = init_pool();
 
-    let app = Router::new()
-        .route("/health", get(healthcheck))
-        .route("/new_user", post(create_user))
-        .route("/users", get(list_users))
-        .route("/login", post(login_user))
+    let app = routes::create_routes(pool)
         .layer(tower_http::catch_panic::CatchPanicLayer::new())
         // TODO: remove or find better way for production than this CorsLayer
         .layer(CorsLayer::permissive())
@@ -62,8 +53,7 @@ async fn main() -> anyhow::Result<()>{
             .on_failure(|error: ServerErrorsFailureClass, latency: Duration, span: &Span| {
                 tracing::error!(?error, "Request failed after {:?}", latency.as_millis());
             })
-        )
-        .with_state(pool);
+        );
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.context("failed to bind TCP listener")?;
     tracing::debug!("Listening on: {}", listener.local_addr()?);
@@ -73,8 +63,4 @@ async fn main() -> anyhow::Result<()>{
         .context("axum:serve failed")?;
 
     Ok(())
-}
-
-async fn healthcheck() -> impl IntoResponse {
-    Json(HealthResponse {message: "Ok"})
 }

@@ -11,7 +11,7 @@ use crate::user::read::find_user_by_email;
 
 #[tracing::instrument(skip(pool))]
 // TODO: change the return type of the function
-pub async fn create_user(State(pool): State<deadpool_diesel::postgres::Pool>, Json(mut new_user): Json<NewUser>,) -> Result<impl IntoResponse, AppError> {
+pub async fn create_user(State(pool): State<deadpool_diesel::postgres::Pool>, Json(mut new_user): Json<NewUser>) -> Result<impl IntoResponse, AppError> {
     debug!("new_user: {:?}", new_user);
     match find_user_by_email(&pool, new_user.email.clone()).await {
         Ok(_) => return Err(AppError::EmailAlreadyExists),
