@@ -22,7 +22,7 @@ loginForm.addEventListener("submit", async (event) => {
 
     try {
         console.log("Sending login request to: ", `${API_BASE_URL}/users/${loginRoute}`);
-        const response = await fetch(`${API_BASE_URL}/users/${loginRoute}`, {
+        const response = await fetch(`${API_BASE_URL}/${loginRoute}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

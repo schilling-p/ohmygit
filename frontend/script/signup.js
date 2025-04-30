@@ -9,8 +9,8 @@ document.getElementById("signupForm").addEventListener("submit", async (event) =
     const signupMessage = document.getElementById("signup-output");
 
     try {
-        console.log("Sending sign up request to: ", `${API_BASE_URL}/users/${signupRoute}`);
-        const response = await fetch(`${API_BASE_URL}/users/${signupRoute}`, {
+        console.log("Sending sign up request to: ", `${API_BASE_URL}/${signupRoute}`);
+        const response = await fetch(`${API_BASE_URL}/${signupRoute}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: username, email: email, hashed_pw: password }),
