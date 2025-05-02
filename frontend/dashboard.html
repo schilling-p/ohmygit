@@ -2,9 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>OhMyGit - Dashboard</title>
+    <script type="module" src="script/dashboard.js" defer></script>
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
 </head>
 <body>
-<h1>Dashboard</h1>
+<div class="navbar">
+    <h1>OhMyGit</h1>
+    <div class="navbar-right">
+        <a href="#">Pull Requests</a>
+        <a href="#">Issues</a>
+        <button class="new-repo-btn">New</button>
+        <div class="dropdown">
+            <button class="dropbtn">Profile
+                <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-content">
+                <a href="#">Settings</a>
+                <a href="#">Logout</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="dashboard-container">
+    <div class="dashboard-columns">
+        <aside class="sidebar">
+            <div class="section-header">
+                <h2>Organizations</h2>
+            </div>
+            <div id="organizations-list">
+                <!-- Organizations will be populated here -->
+            </div>
+        </aside>
+        <section class="activity-section">
+            <div class="section-header">
+                <h2>Recent Activity</h2>
+            </div>
+            <div id="activity-list">
+                <!-- Activities will be populated here -->
+            </div>
+        </section>
+        <section class="repos-section">
+            <div class="section-header">
+                <h2>Repositories</h2>
+            </div>
+            <div id="repositories-list">
+                <!-- Repositories will be populated here -->
+            </div>
+        </section>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-links">
+            <a href="#">About</a>
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+            <a href="#">Contact</a>
+        </div>
+        <div class="footer-copyright">
+            <p>&copy; 2025 OhMyGit. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
 </body>
 </html>
