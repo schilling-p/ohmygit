@@ -1,7 +1,6 @@
 use axum::{extract::State, Json};
 use axum_macros::debug_handler;
-use diesel::{RunQueryDsl, SelectableHelper};
-use diesel::query_dsl::QueryDsl;
+use diesel::{RunQueryDsl, SelectableHelper, QueryDsl};
 use diesel::expression_methods::ExpressionMethods;
 use domain::models::User;
 use infrastructure::DbPool;
@@ -24,13 +23,13 @@ pub async fn list_users(
 
 #[tracing::instrument(skip(pool))]
 pub async fn find_user_by_email(
-    pool: &DbPool, user_email: String,
+    pool: &DbPool, user_email: &str,
 ) -> Result<Json<User>, AppError> {
-    debug!("LoginRequest: {:?}", user_email);
     use domain::schema::users::dsl::*;
     let conn = pool.get().await.map_err(AppError::from)?;
+    let email_owned = user_email.to_owned();
     let res = conn
-        .interact(|conn| users.filter(email.eq(user_email)).select(User::as_select()).first(conn))
+        .interact(move |conn| users.filter(email.eq(email_owned)).select(User::as_select()).first::<User>(conn))
         .await
         .map_err(|e| AppError::UnexpectedError(e.to_string()))?
         .map_err(AppError::from)?;

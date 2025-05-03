@@ -3,24 +3,21 @@ use axum_macros::debug_handler;
 use axum::Json;
 use super::read::find_user_by_email;
 use shared::crypto::verify_password;
-use domain::models::LoginRequest;
+use domain::models::{LoginRequest, LoginResponse};
 use infrastructure::DbPool;
 use error::AppError;
-use serde::Serialize;
-
-#[derive(Serialize)]
-pub struct LoginResponse {
-    message: String,
-}
+use tracing::debug;
 
 #[debug_handler]
 pub async fn login_user(pool: State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<Json<LoginResponse>, AppError> {
-    // TODO: don't do clone() , requires new signature of find_user_by_email()
-    match find_user_by_email(&pool, login_request.email.clone()).await {
-        Err(_) => Err(AppError::EmailAlreadyExists),
-        Ok(user) => {
-            verify_password(&login_request.password, &user.hashed_pw)?;
-            Ok(Json(LoginResponse { message: "Login successful".to_string() }))
-        },
-    }
+    // TODO: don't do clone() , solving this requires a new signature of find_user_by_email()
+    debug!("LoginRequest: {:?}", &login_request);
+    let user = find_user_by_email(&pool, &login_request.email).await?.0;
+    verify_password(&login_request.password, &user.hashed_pw)?;
+
+    debug!("login successful");
+    Ok(Json(LoginResponse {
+        message: "login_successful",
+        user_email: user.email.to_string(),
+    }))
 }

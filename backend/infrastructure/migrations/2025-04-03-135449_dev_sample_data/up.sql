@@ -1,5 +1,5 @@
 --
--- Data for Name: organizations; Type: TABLE DATA; ; Owner: admin
+-- Data for Name: organizations; Type: TABLE DATA; Owner: admin
 --
 
 INSERT INTO organizations (id, name, description, created_at, updated_at) VALUES ('ffd6b166-6694-4a23-928a-e2d1869b6a17', 'code university', 'code university of applied sciences berlin, we love to educate you', '2025-04-02 11:55:11.575+00', '2025-04-02 11:55:15.197+00');
@@ -8,10 +8,10 @@ INSERT INTO organizations (id, name, description, created_at, updated_at) VALUES
 
 
 --
--- Data for Name: users; Type: TABLE DATA; ; Owner: admin
+-- Data for Name: users; Type: TABLE DATA; Owner: admin
 --
 
-INSERT INTO users (id, name, email, hashed_pw, created_at, updated_at) VALUES ('c8bf561e-5d0e-4baa-ad59-734debf37bb3', 'paul', 'paul.schilling@code.berlin', 'password', '2025-04-02 11:51:17.923+00', '2025-04-02 11:51:21.191+00');
+INSERT INTO users (id, name, email, hashed_pw, created_at, updated_at) VALUES ('c8bf561e-5d0e-4baa-ad59-734debf37bb3', 'paul', 'paul.schilling@code.berlin', '$argon2id$v=19$m=19456,t=2,p=1$3P80ul+evy7MfQ9jDCrAPw$ubpQA6uQx+j7l3FBFuodeeXnf9fQPCqNy7WjlrhXp1k', '2025-04-02 11:51:17.923+00', '2025-04-02 11:51:21.191+00');
 INSERT INTO users (id, name, email, hashed_pw, created_at, updated_at) VALUES ('7d6e9871-639b-472a-b25b-df6b10178f71', 'matilda', 'matilda.junghanns@gmx.net', 'paulistderbeste', '2025-04-02 11:51:57.59+00', '2025-04-02 11:52:00.56+00');
 INSERT INTO users (id, name, email, hashed_pw, created_at, updated_at) VALUES ('81d7d778-c455-49a5-abe1-3703deb51ed4', 'rupert', 'rupert.junghanns@gmx.de', 'mamaistdiebeste', '2025-04-02 11:52:19.303+00', '2025-04-02 11:52:20.276+00');
 INSERT INTO users (id, name, email, hashed_pw, created_at, updated_at) VALUES ('19530df9-661d-4377-956b-a64cd0fbf18d', 'thomas', 'thomas.frey@code.berlin', 'praisejah', '2025-04-02 11:52:52.532+00', '2025-04-02 11:52:53.312+00');
@@ -19,7 +19,7 @@ INSERT INTO users (id, name, email, hashed_pw, created_at, updated_at) VALUES ('
 
 
 --
--- Data for Name: repositories; Type: TABLE DATA; ; Owner: admin
+-- Data for Name: repositories; Type: TABLE DATA; Owner: admin
 --
 
 INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, created_at, updated_at) VALUES ('58b187aa-1206-4777-ae99-9e3d2cd4ad8e', 'c8bf561e-5d0e-4baa-ad59-734debf37bb3', NULL, 'learning_rust', false, '2025-04-02 10:11:00.572093+00', '2025-04-02 10:11:00.572093+00');
@@ -31,7 +31,7 @@ INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, created_a
 
 
 --
--- Data for Name: branches; Type: TABLE DATA; ; Owner: admin
+-- Data for Name: branches; Type: TABLE DATA; Owner: admin
 --
 
 INSERT INTO branches (id, creator_id, repository_id, name, created_at, updated_at) VALUES ('7378b52f-2c9b-499f-a2d9-8a90ade47a87', 'c8bf561e-5d0e-4baa-ad59-734debf37bb3', '58b187aa-1206-4777-ae99-9e3d2cd4ad8e', 'main', '2025-04-02 12:32:21.642064+00', '2025-04-02 12:32:21.642064+00');
@@ -46,7 +46,7 @@ INSERT INTO branches (id, creator_id, repository_id, name, created_at, updated_a
 
 
 --
--- Data for Name: issues; Type: TABLE DATA; ; Owner: admin
+-- Data for Name: issues; Type: TABLE DATA; Owner: admin
 --
 
 INSERT INTO issues (id, creator_id, repository_id, title, body, status, created_at, updated_at) VALUES ('6102120a-fba6-4f4a-a570-4e8a195c0e97', '7d6e9871-639b-472a-b25b-df6b10178f71', 'c306c37c-892e-4761-8af2-073b26374ca5', 'missing logout button', 'the app is missing a button to log out', 'open', '2025-04-02 12:42:57.483907+00', '2025-04-02 12:42:57.483907+00');
@@ -61,7 +61,7 @@ INSERT INTO issues (id, creator_id, repository_id, title, body, status, created_
 
 
 --
--- Data for Name: merge_requests; Type: TABLE DATA; ; Owner: admin
+-- Data for Name: merge_requests; Type: TABLE DATA; Owner: admin
 --
 
 INSERT INTO merge_requests (id, creator_id, repository_id, source_branch_id, target_branch_id, title, description, created_at, updated_at, status) VALUES ('52ac77e3-ae7c-451d-82a4-26d980bbcf75', 'c8bf561e-5d0e-4baa-ad59-734debf37bb3', '58b187aa-1206-4777-ae99-9e3d2cd4ad8e', '3e42859e-b962-4266-9924-5261b53793a2', '137cc638-85d3-426e-9330-01c4b1e02be0', 'Ticket-54', 'Ticket-54 feature X', '2025-04-02 12:52:35.180163+00', '2025-04-02 12:52:35.180163+00', 'open');
@@ -70,7 +70,7 @@ INSERT INTO merge_requests (id, creator_id, repository_id, source_branch_id, tar
 
 
 --
--- Data for Name: comments; Type: TABLE DATA; ; Owner: admin
+-- Data for Name: comments; Type: TABLE DATA; Owner: admin
 --
 
 INSERT INTO comments (id, creator_id, target_id, target_type, body, created_at, updated_at) VALUES ('f88e3a5e-0a3f-4840-99f1-5657b6997fa4', '7d6e9871-639b-472a-b25b-df6b10178f71', '9e2f1953-4ee1-469d-b94c-f797639b4415', 'issue', 'that has to be this way, that is a skill issue on your side', '2025-04-02 13:01:22.829705+00', '2025-04-02 13:02:24.797878+00');
@@ -80,7 +80,7 @@ INSERT INTO comments (id, creator_id, target_id, target_type, body, created_at, 
 
 
 --
--- Data for Name: organizations_members; Type: TABLE DATA; ; Owner: admin
+-- Data for Name: organizations_members; Type: TABLE DATA; Owner: admin
 --
 
 INSERT INTO organizations_members (user_id, organization_id, role, created_at, updated_at) VALUES ('c8bf561e-5d0e-4baa-ad59-734debf37bb3', '30a2383b-3e8b-4aff-97e5-e260b890ba4a', 'admin', '2025-04-02 09:59:36.635401+00', '2025-04-02 09:59:36.635401+00');
@@ -95,7 +95,7 @@ INSERT INTO organizations_members (user_id, organization_id, role, created_at, u
 
 
 --
--- Data for Name: user_repository_roles; Type: TABLE DATA; ; Owner: admin
+-- Data for Name: user_repository_roles; Type: TABLE DATA; Owner: admin
 --
 
 INSERT INTO user_repository_roles (user_id, repository_id, role, created_at, updated_at) VALUES ('c8bf561e-5d0e-4baa-ad59-734debf37bb3', 'c306c37c-892e-4761-8af2-073b26374ca5', 'owner', '2025-04-02 12:28:37.64902+00', '2025-04-02 12:28:37.64902+00');

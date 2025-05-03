@@ -13,7 +13,7 @@ use crate::user::read::find_user_by_email;
 // TODO: change the return type of the function
 pub async fn create_user(State(pool): State<deadpool_diesel::postgres::Pool>, Json(mut new_user): Json<NewUser>) -> Result<impl IntoResponse, AppError> {
     debug!("new_user: {:?}", new_user);
-    match find_user_by_email(&pool, new_user.email.clone()).await {
+    match find_user_by_email(&pool, &new_user.email).await {
         Ok(_) => return Err(AppError::EmailAlreadyExists),
         Err(AppError::NotFound(_)) => {},
         Err(e) => return Err{ 0: e },

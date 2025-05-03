@@ -21,7 +21,7 @@ loginForm.addEventListener("submit", async (event) => {
     const password = document.getElementById("password").value;
 
     try {
-        console.log("Sending login request to: ", `${API_BASE_URL}/users/${loginRoute}`);
+        console.log("Sending login request to: ", `${API_BASE_URL}/${loginRoute}`);
         const response = await fetch(`${API_BASE_URL}/${loginRoute}`, {
             method: "POST",
             headers: {
@@ -35,6 +35,7 @@ loginForm.addEventListener("submit", async (event) => {
 
         if (response.ok) {
             statusText.textContent = "Account created successfully!";
+            localStorage.setItem("user_email", data.user_email);
             window.location.href = "dashboard.html";
         } else if (response.status === 409) {
             statusText.textContent = data.error || data.message || "Email already exists.";
