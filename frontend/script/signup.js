@@ -25,7 +25,8 @@ document.getElementById("signupForm").addEventListener("submit", async (event) =
 
         if (response.ok) {
             signupMessage.textContent = "Account created successfully!";
-            // window.location.href = "index.html";
+            localStorage.setItem("user_email", data.user_email);
+            window.location.href = "dashboard.html";
         } else if (response.status === 409) {
             signupMessage.textContent = data.error || data.message || "Email already exists.";
         } else {

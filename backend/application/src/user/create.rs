@@ -1,8 +1,7 @@
 use axum::extract::State;
 use axum::Json;
-use axum::response::IntoResponse;
 use diesel::prelude::*;
-use domain::models::{NewUser, User};
+use domain::models::{NewUser, User, SignupResponse};
 use domain::schema::users;
 use shared::crypto::hash_password;
 use error::AppError;
@@ -11,7 +10,7 @@ use crate::user::read::find_user_by_email;
 
 #[tracing::instrument(skip(pool))]
 // TODO: change the return type of the function
-pub async fn create_user(State(pool): State<deadpool_diesel::postgres::Pool>, Json(mut new_user): Json<NewUser>) -> Result<impl IntoResponse, AppError> {
+pub async fn create_user(State(pool): State<deadpool_diesel::postgres::Pool>, Json(mut new_user): Json<NewUser>) -> Result<Json<SignupResponse>, AppError> {
     debug!("new_user: {:?}", new_user);
     match find_user_by_email(&pool, &new_user.email).await {
         Ok(_) => return Err(AppError::EmailAlreadyExists),
@@ -32,5 +31,9 @@ pub async fn create_user(State(pool): State<deadpool_diesel::postgres::Pool>, Js
         .await
         .map_err(|e| AppError::UnexpectedError(e.to_string()))?
         .map_err(AppError::from)?;
-    Ok(Json(res))
+
+    Ok(Json(SignupResponse {
+        message: "Sign Up successful",
+        user_email: res.email,
+    }))
 }
