@@ -1,15 +1,15 @@
 use axum::extract::State;
 use axum::Json;
 use diesel::prelude::*;
-use domain::models::{NewUser, User, SignupResponse};
+use domain::models::{NewUser, User};
 use domain::schema::users;
+use domain::response::auth::SignupResponse;
 use shared::crypto::hash_password;
 use error::AppError;
 use log::debug;
 use crate::user::read::find_user_by_email;
 
 #[tracing::instrument(skip(pool))]
-// TODO: change the return type of the function
 pub async fn create_user(State(pool): State<deadpool_diesel::postgres::Pool>, Json(mut new_user): Json<NewUser>) -> Result<Json<SignupResponse>, AppError> {
     debug!("new_user: {:?}", new_user);
     match find_user_by_email(&pool, &new_user.email).await {

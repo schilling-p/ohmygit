@@ -37,31 +37,3 @@ pub struct NewUser {
     pub email: String,
     pub hashed_pw: String,
 }
-
-#[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
-pub struct LoginRequest {
-    pub email: String,
-    pub password: String,
-}
-
-#[derive(Serialize, Debug, PartialEq, Clone)]
-pub struct LoginResponse {
-    pub message: &'static str,
-    pub user_email: String,
-}
-
-#[derive(Serialize, Debug, PartialEq, Clone)]
-pub struct SignupResponse {
-    pub message: &'static str,
-    pub user_email: String,
-}
-
-#[derive(Serialize, Debug, PartialEq, Clone)]
-pub struct HealthResponse {
-    pub message: &'static str,
-}
-
-#[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
-pub struct FetchRepoRequest {
-    pub user_email: String,
-}

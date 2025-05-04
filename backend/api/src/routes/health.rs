@@ -2,7 +2,7 @@ use axum::Json;
 use axum::response::IntoResponse;
 use axum::Router;
 use axum::routing::get;
-use domain::models::HealthResponse;
+use domain::response::health::HealthResponse;
 
 
 pub fn routes() -> Router {
