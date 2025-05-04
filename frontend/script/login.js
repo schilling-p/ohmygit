@@ -30,17 +30,17 @@ loginForm.addEventListener("submit", async (event) => {
             body: JSON.stringify({email: email, password: password}),
         });
 
-        const data = await response.json();
-        console.log(data)
+        const json = await response.json();
+        console.log(json)
 
-        if (response.ok) {
-            statusText.textContent = "Account created successfully!";
-            localStorage.setItem("user_email", data.user_email);
+        if (response.status === 200 && json.type === "Login") {
+            statusText.textContent = "Login successful!";
+            localStorage.setItem("user_email", json.data.user_email);
             window.location.href = "dashboard.html";
         } else if (response.status === 409) {
-            statusText.textContent = data.error || data.message || "Email already exists.";
+            statusText.textContent = json.error || json.message || "Email already exists.";
         } else {
-            statusText.textContent = data.message || "An error occurred during sign up. Please try again.";
+            statusText.textContent = json.message || "An error occurred during sign up. Please try again.";
         }
 
     } catch (err) {
