@@ -21,7 +21,14 @@ async function loadUserRepositories(user_email) {
         body: JSON.stringify({user_email: user_email}),
 
     });
-    return await response.json();
+
+    const json = await response.json();
+
+    if (response.status === 200) {
+        return json.data.repositories;
+    } else {
+        throw new Error("Error loading user repositories:");
+    }
 }
 
 function populateRepositories(repos) {
