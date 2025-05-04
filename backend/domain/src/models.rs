@@ -2,7 +2,7 @@ use diesel::{Associations, Identifiable, Insertable, QueryId, Queryable, Queryab
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
-use crate::schema::{users, repositories};
+use crate::schema::{users, repositories, organizations, organizations_members};
 
 #[derive(Selectable, Queryable, QueryableByName, Identifiable, Serialize, QueryId, Clone, Debug, PartialEq)]
 #[diesel(table_name = users)]
@@ -36,4 +36,29 @@ pub struct NewUser {
     pub name: String,
     pub email: String,
     pub hashed_pw: String,
+}
+
+#[derive(Selectable, Queryable, QueryableByName, Identifiable, Serialize, QueryId, Clone, Debug, PartialEq)]
+#[diesel(table_name = organizations)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct Organization {
+    pub id: Uuid,
+    pub name: String,
+    pub description: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Selectable, Queryable, Identifiable, QueryableByName, Associations, Serialize, QueryId, Clone, Debug, PartialEq)]
+#[diesel(table_name = organizations_members)]
+#[diesel(belongs_to(Organization, foreign_key = organization_id))]
+#[diesel(belongs_to(User, foreign_key = user_id))]
+#[diesel(primary_key(user_id, organization_id))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct OrganizationMember {
+    pub user_id: Uuid,
+    pub organization_id: Uuid,
+    pub role: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
