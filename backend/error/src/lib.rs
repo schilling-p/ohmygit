@@ -12,6 +12,7 @@ pub enum AppError {
     PoolError(deadpool_diesel::PoolError),
     JoinError(tokio::task::JoinError),
     PasswordHashError(PasswordHashError),
+    InvalidCredentials,
 }
 
 impl From<PasswordHashError> for AppError {
@@ -77,6 +78,10 @@ impl IntoResponse for AppError {
             AppError::EmailAlreadyExists => {
                 let body = Json(json!({"error": "email_already_exists"}));
                 (StatusCode::CONFLICT, body).into_response()
+            }
+            AppError::InvalidCredentials => {
+                let body = Json(json!({"error": "invalid_credentials"}));
+                (StatusCode::UNAUTHORIZED, body).into_response()
             }
         }
     }

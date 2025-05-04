@@ -37,8 +37,8 @@ loginForm.addEventListener("submit", async (event) => {
             statusText.textContent = "Login successful!";
             localStorage.setItem("user_email", json.data.user_email);
             window.location.href = "dashboard.html";
-        } else if (response.status === 409) {
-            statusText.textContent = json.error || json.message || "Email already exists.";
+        } else if (response.status === 401) {
+            statusText.textContent = json.error || json.message || "Wrong Login Credentials.";
         } else {
             statusText.textContent = json.message || "An error occurred during sign up. Please try again.";
         }
