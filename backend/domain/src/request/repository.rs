@@ -4,3 +4,9 @@ use serde::{Deserialize, Serialize};
 pub struct FetchRepositoriesRequest {
     pub user_email: String,
 }
+
+#[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
+pub struct GetUserRepositoryRequest {
+    pub username: String,
+    pub repository_name: String,
+}

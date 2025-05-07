@@ -11,3 +11,4 @@ serde_json = "1.0.140"
 anyhow = "1.0.97"
 tokio = "1.44.1"
 argon2 = { version = "0.5.3", features = ["password-hash"] }
+git2 = "0.20.2"

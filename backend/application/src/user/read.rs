@@ -2,11 +2,12 @@ use axum::{extract::State, Json};
 use axum_macros::debug_handler;
 use diesel::{RunQueryDsl, SelectableHelper, QueryDsl};
 use diesel::expression_methods::ExpressionMethods;
-use domain::models::User;
-use infrastructure::DbPool;
-use error::AppError;
-use tracing::debug;
 
+use domain::models::User;
+use infrastructure::diesel::DbPool;
+use error::AppError;
+
+// TODO: remove for production
 #[debug_handler]
 pub async fn list_users(
     State(pool): State<deadpool_diesel::postgres::Pool>,

@@ -67,7 +67,10 @@ function populateRepositories(repos) {
         repoElement.classList.add("repo-card");
 
         const repoLink = document.createElement("a");
-        repoLink.href = `repo.html?id=${repo.id}`;
+        repoLink.addEventListener("click", (event) => {
+            event.preventDefault();
+            loadRepositoryData(repo.name);
+        })
         repoLink.textContent = repo.name;
         repoLink.style.color = "#0366d6";
 
@@ -92,6 +95,20 @@ function populateOrganizations(orgas) {
         repoElement.appendChild(orgaLink);
         orgaList.appendChild(repoElement);
     });
+}
+
+async function loadRepositoryData(repo_name) {
+    const response = await fetch(`${API_BASE_URL}/get_user_repository`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({username: localStorage.getItem("username"), repository_name: repo_name}),
+
+    });
+
+    const json = await response.json();
+    console.log(json);
 }
 
 async function loadUserActivity() {}

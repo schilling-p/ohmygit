@@ -2,6 +2,7 @@ use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
 use diesel::result::Error as DieselError;
 use serde_json::json;
 use argon2::password_hash::Error as PasswordHashError;
+use git2::Error as Git2Error;
 
 #[derive(Debug)]
 pub enum AppError {
@@ -13,6 +14,13 @@ pub enum AppError {
     JoinError(tokio::task::JoinError),
     PasswordHashError(PasswordHashError),
     InvalidCredentials,
+    GitError(Git2Error),
+}
+
+impl From<Git2Error> for AppError {
+    fn from(err: Git2Error) -> Self {
+        AppError::GitError(err)
+    }
 }
 
 impl From<PasswordHashError> for AppError {
@@ -82,6 +90,10 @@ impl IntoResponse for AppError {
             AppError::InvalidCredentials => {
                 let body = Json(json!({"error": "invalid_credentials"}));
                 (StatusCode::UNAUTHORIZED, body).into_response()
+            }
+            AppError::GitError(err) => {
+                let body = Json(json!({"error": "git_error", "message": err.to_string()}));
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
             }
         }
     }

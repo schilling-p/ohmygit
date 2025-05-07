@@ -8,7 +8,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tracing::{info_span, Span};
 use tower_http::cors::CorsLayer;
 
-use infrastructure::{init_pool, run_migrations};
+use infrastructure::diesel::{init_pool, run_migrations};
 use shared::graceful::shutdown_signal;
 mod routes;
 

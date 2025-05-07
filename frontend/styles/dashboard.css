@@ -225,3 +225,7 @@ body {
 .footer-copyright {
     color: #586069;
 }
+
+.repo-card a:hover {
+    cursor: pointer;
+}

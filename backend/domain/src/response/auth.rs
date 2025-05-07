@@ -4,6 +4,7 @@ use serde::Serialize;
 pub struct LoginResponse {
     pub message: &'static str,
     pub user_email: String,
+    pub username: String,
 }
 
 #[derive(Serialize, Debug, PartialEq, Clone)]
