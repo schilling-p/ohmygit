@@ -1,4 +1,3 @@
-
 use std::time::Duration;
 use axum::response::Response;
 use axum::http::Request;
@@ -50,7 +49,7 @@ async fn main() -> anyhow::Result<()>{
                 span.record("latency", &tracing::field::display(response.status()));
                 tracing::info!("Finished handling request in {}ms", latency.as_millis());
             })
-            .on_failure(|error: ServerErrorsFailureClass, latency: Duration, span: &Span| {
+            .on_failure(|error: ServerErrorsFailureClass, latency: Duration, _span: &Span| {
                 tracing::error!(?error, "Request failed after {:?}", latency.as_millis());
             })
         );
