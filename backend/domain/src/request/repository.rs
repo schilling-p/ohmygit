@@ -6,7 +6,7 @@ pub struct FetchRepositoriesRequest {
 }
 
 #[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
-pub struct GetUserRepositoryRequest {
+pub struct RepositoryPath {
     pub username: String,
     pub repository_name: String,
 }

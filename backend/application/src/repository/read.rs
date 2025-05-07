@@ -1,10 +1,10 @@
-use axum::{extract::State, Json};
+use axum::{extract::State, extract::Path, Json};
 use axum_macros::debug_handler;
 use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, BelongingToDsl};
 use tracing::debug;
 
 use domain::models::Repository;
-use domain::request::repository::{FetchRepositoriesRequest, GetUserRepositoryRequest};
+use domain::request::repository::{FetchRepositoriesRequest, RepositoryPath};
 use domain::ApiResponse;
 use domain::response::repository::{ListRepositoriesResponse, RepositoryOverview};
 use error::AppError;
@@ -30,8 +30,8 @@ pub async fn list_user_repositories(State(pool): State<deadpool_diesel::postgres
 }
 
 #[debug_handler]
-pub async fn get_repository(Json(get_user_repository_request): Json<GetUserRepositoryRequest>) -> Result<ApiResponse, AppError> {
-    let repo_path = format!("/repos/{}/{}.git", get_user_repository_request.username, get_user_repository_request.repository_name);
+pub async fn get_repository(Path(repo_path): Path<RepositoryPath>) -> Result<ApiResponse, AppError> {
+    let repo_path = format!("/repos/{}/{}.git", repo_path.username, repo_path.repository_name);
     let repo_overview = get_repo_overview(&repo_path)?;
 
     Ok(ApiResponse::RepositoryForUser(repo_overview))

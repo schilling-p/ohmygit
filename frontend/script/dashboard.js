@@ -67,10 +67,7 @@ function populateRepositories(repos) {
         repoElement.classList.add("repo-card");
 
         const repoLink = document.createElement("a");
-        repoLink.addEventListener("click", (event) => {
-            event.preventDefault();
-            loadRepositoryData(repo.name);
-        })
+        repoLink.href = `repository.html?username=${localStorage.username}&repository_name=${repo.name}`;
         repoLink.textContent = repo.name;
         repoLink.style.color = "#0366d6";
 
@@ -98,7 +95,7 @@ function populateOrganizations(orgas) {
 }
 
 async function loadRepositoryData(repo_name) {
-    const response = await fetch(`${API_BASE_URL}/get_user_repository`, {
+    const response = await fetch(`${API_BASE_URL}/api/repos/${localStorage.username}/${repo_name}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

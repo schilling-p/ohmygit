@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repository Overview</title>
+    <link rel="stylesheet" href="styles/repository.css">
+</head>
+<body>
+<div class="container">
+    <!-- Repository Header -->
+    <header class="repo-header">
+        <div class="repo-title">
+            <h1>
+                <span class="owner">owner</span> /
+                <span class="repo-name">repository-name</span>
+            </h1>
+            <div class="repo-stats">
+                <span class="stat"><i class="icon star"></i> 123 stars</span>
+                <span class="stat"><i class="icon fork"></i> 45 forks</span>
+                <span class="stat"><i class="icon watch"></i> 67 watching</span>
+            </div>
+        </div>
+        <div class="repo-actions">
+            <button class="btn primary">Clone</button>
+            <button class="btn">Fork</button>
+            <button class="btn">Star</button>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="repo-nav">
+        <a href="#" class="active">Code</a>
+        <a href="#">Issues</a>
+        <a href="#">Pull Requests</a>
+        <a href="#">Actions</a>
+        <a href="#">Projects</a>
+        <a href="#">Wiki</a>
+        <a href="#">Security</a>
+        <a href="#">Insights</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="repo-content">
+        <!-- Branch Selection -->
+        <div class="branch-selector">
+            <button class="btn branch">main <i class="icon dropdown"></i></button>
+            <div class="commit-info">
+                <span class="last-commit">Last commit: abc123d</span>
+                <span class="commit-time">2 hours ago</span>
+            </div>
+        </div>
+
+        <!-- File Browser -->
+        <div class="file-browser">
+            <table>
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Last commit message</th>
+                    <th>Last updated</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><i class="icon folder"></i> src</td>
+                    <td>Update documentation</td>
+                    <td>2 days ago</td>
+                </tr>
+                <tr>
+                    <td><i class="icon file"></i> README.md</td>
+                    <td>Initial commit</td>
+                    <td>5 days ago</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- README Preview -->
+        <div class="readme">
+            <h2>README.md</h2>
+            <div class="markdown-content">
+                <h1>Project Title</h1>
+                <p>Project description goes here...</p>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>
