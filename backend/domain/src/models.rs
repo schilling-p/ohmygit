@@ -9,7 +9,7 @@ use crate::schema::{users, repositories, organizations, organizations_members};
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
     pub id: Uuid,
-    pub name: String,
+    pub username: String,
     pub email: String,
     pub hashed_pw: String,
     pub created_at: DateTime<Utc>,
@@ -33,7 +33,7 @@ pub struct Repository {
 #[derive(Deserialize, Insertable, Debug, PartialEq, Clone)]
 #[diesel(table_name = users)]
 pub struct NewUser {
-    pub name: String,
+    pub username: String,
     pub email: String,
     pub hashed_pw: String,
 }

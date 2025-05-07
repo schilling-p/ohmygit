@@ -96,7 +96,7 @@ diesel::table! {
 diesel::table! {
     users (id) {
         id -> Uuid,
-        name -> Text,
+        username -> Text,
         email -> Text,
         hashed_pw -> Text,
         created_at -> Timestamptz,

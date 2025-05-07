@@ -38,6 +38,8 @@ services:
     command: ["sh", "-c", "wait-for-it db:5432 -- /bin/backend"]
     networks:
       - internal
+    volumes:
+      - ./git_repos:/repos
 
 volumes:
   pgdata:

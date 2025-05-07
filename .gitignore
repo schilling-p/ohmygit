@@ -5,3 +5,5 @@ archive
 target
 seed
 .idea
+git_repos
+./git_repos/*
