@@ -29,7 +29,7 @@ impl IntoResponse for ApiResponse {
             ApiResponse::Signup(_) => {StatusCode::CREATED},
             ApiResponse::ListRepositoriesPerUser(_) => {StatusCode::OK},
             ApiResponse::Organizations(_) => {StatusCode::OK},
-            ApiResponse::RepositoryForUser(_) => {StatusCode::OK}       
+            ApiResponse::RepositoryForUser(_) => {StatusCode::OK}
         };
 
         (status, Json(self)).into_response()

@@ -8,6 +8,7 @@ infrastructure = { path = "../infrastructure" }
 application = { path = "../application" }
 domain = {path = "../domain"}
 shared = { path = "../shared" }
+templating = { path = "../templating" }
 
 axum = "0.8.4"
 tokio = { version = "1.44.1", features = ["full"] }

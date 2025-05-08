@@ -58,6 +58,7 @@ dependencies = [
  "domain",
  "infrastructure",
  "shared",
+ "templating",
  "tokio",
  "tower-http",
  "tracing",
@@ -68,6 +69,7 @@ dependencies = [
 name = "application"
 version = "0.1.0"
 dependencies = [
+ "askama",
  "axum",
  "axum-macros",
  "deadpool-diesel",
@@ -77,6 +79,7 @@ dependencies = [
  "infrastructure",
  "log",
  "shared",
+ "templating",
  "tracing",
 ]
 
@@ -529,6 +532,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "argon2",
+ "askama",
  "axum",
  "deadpool-diesel",
  "diesel",

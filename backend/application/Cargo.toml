@@ -8,6 +8,7 @@ domain = { path = "../domain" }
 infrastructure = { path = "../infrastructure" }
 shared = { path = "../shared" }
 error = { path = "../error" }
+templating = { path = "../templating" }
 
 axum = "0.8.1"
 axum-macros = "0.5.0"
@@ -15,3 +16,4 @@ diesel = { version = "2.2.8", features = ["postgres", "postgres_backend"] }
 deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
 tracing = "0.1.41"
 log = "0.4.27"
+askama = "0.14.0"
