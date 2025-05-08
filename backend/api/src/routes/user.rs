@@ -10,6 +10,5 @@ pub fn routes(pool: deadpool_diesel::postgres::Pool) -> Router {
         .route("/users", get(list_users))
         .route("/signup", post(create_user))
         .route("/login", post(login_user))
-        .route("/user_organizations", post(list_user_organizations))
         .with_state(pool)
 }

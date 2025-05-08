@@ -10,6 +10,7 @@ shared = { path = "../shared" }
 error = { path = "../error" }
 templating = { path = "../templating" }
 
+tower-sessions = "0.14.0"
 axum = "0.8.1"
 axum-macros = "0.5.0"
 diesel = { version = "2.2.8", features = ["postgres", "postgres_backend"] }

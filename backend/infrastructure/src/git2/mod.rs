@@ -1,4 +1,4 @@
-use git2::{Repository, Error, Commit, Tree, Oid};
+use git2::{Repository, Error, Commit};
 use error::AppError;
 
 pub struct GitRepository {

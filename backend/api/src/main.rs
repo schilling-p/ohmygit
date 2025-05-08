@@ -1,4 +1,5 @@
 use std::time::Duration;
+use time::Duration as duration;
 use axum::response::Response;
 use axum::http::Request;
 use axum::extract::MatchedPath;
@@ -7,6 +8,7 @@ use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tracing::{info_span, Span};
 use tower_http::cors::CorsLayer;
+use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 
 use infrastructure::diesel::{init_pool, run_migrations};
 use shared::graceful::shutdown_signal;
@@ -14,6 +16,11 @@ mod routes;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()>{
+
+    let session_store = MemoryStore::default();
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_secure(false)
+        .with_expiry(Expiry::OnInactivity(duration::seconds(10)));
 
     let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {"debug, tower_http=debug".into()});
     tracing_subscriber::registry()
@@ -29,6 +36,7 @@ async fn main() -> anyhow::Result<()>{
         .layer(tower_http::catch_panic::CatchPanicLayer::new())
         // TODO: remove or find better way for production than this CorsLayer
         .layer(CorsLayer::permissive())
+        .layer(session_layer)
         .layer(TraceLayer::new_for_http()
             .make_span_with(|request: &Request<_>| {
                 let matched_path = request.extensions().get::<MatchedPath>().map(MatchedPath::as_str);

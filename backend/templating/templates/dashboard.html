@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock title %}
+{% block title %}Dashboard - {{ name }}{% endblock title %}
 {% block head %}
 {% call super() %}
 <script type="module" src="/script/dashboard.js" defer></script>
@@ -13,7 +13,11 @@
                 <h2>Organizations</h2>
             </div>
             <div id="organizations-list">
-                <!-- Organizations are populated here -->
+                <ul>
+                    {% for orga in organizations %}
+                    <li>{{ orga.name }}</li>
+                    {% endfor %}
+                </ul>
             </div>
         </aside>
         <section class="activity-section">
@@ -29,7 +33,11 @@
                 <h2>Repositories</h2>
             </div>
             <div id="repositories-list">
-                <!-- Repositories are populated here -->
+                <ul>
+                    {% for repo in repositories %}
+                    <li>{{ repo.name }}</li>
+                    {% endfor %}
+                </ul>
             </div>
         </section>
     </div>

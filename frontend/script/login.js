@@ -37,7 +37,7 @@ loginForm.addEventListener("submit", async (event) => {
             statusText.textContent = "Login successful!";
             localStorage.setItem("user_email", json.data.user_email);
             localStorage.setItem("username", json.data.username)
-            window.location.href = "dashboard.html";
+            window.location.href = "/dashboard";
         } else if (response.status === 401) {
             statusText.textContent = json.error || json.message || "Wrong Login Credentials.";
         } else {
