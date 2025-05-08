@@ -1,5 +1,5 @@
 use axum::Router;
-use axum::routing::{get, post};
+use axum::routing::{post};
 use application::repository::read::{get_repository, list_user_repositories};
 
 pub fn routes(pool: deadpool_diesel::postgres::Pool) -> Router {
