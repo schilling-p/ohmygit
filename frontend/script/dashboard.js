@@ -1,23 +1,7 @@
 import {API_BASE_URL} from "./common.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const user_email = localStorage.getItem("user_email");
-    // TODO: change this to generate some display message that an error has occurred
-    if (!user_email) return;
-
-    try {
-        const repositories = await loadUserRepositories(user_email);
-        populateRepositories(repositories);
-    } catch (err) {
-        console.error("Error loading user repositories: ", err);
-    }
-
-    try {
-        const organizations = await loadUserOrganizations(user_email);
-        populateOrganizations(organizations);
-    } catch (err) {
-        console.error("Error loading user organizations: ", err);
-    }
+    console.log("DOM fully loaded and parsed");
 });
 
 async function loadUserRepositories(user_email) {
