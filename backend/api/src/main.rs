@@ -1,5 +1,4 @@
 use std::time::Duration;
-use time::Duration as duration;
 use axum::response::Response;
 use axum::http::Request;
 use axum::extract::MatchedPath;
@@ -8,7 +7,7 @@ use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tracing::{info_span, Span};
 use tower_http::cors::CorsLayer;
-use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
+use tower_sessions::{MemoryStore, SessionManagerLayer};
 
 use infrastructure::diesel::{init_pool, run_migrations};
 use shared::graceful::shutdown_signal;
@@ -18,9 +17,7 @@ mod routes;
 async fn main() -> anyhow::Result<()>{
 
     let session_store = MemoryStore::default();
-    let session_layer = SessionManagerLayer::new(session_store)
-        .with_secure(false)
-        .with_expiry(Expiry::OnInactivity(duration::seconds(10)));
+    let session_layer = SessionManagerLayer::new(session_store);
 
     let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {"debug, tower_http=debug".into()});
     tracing_subscriber::registry()

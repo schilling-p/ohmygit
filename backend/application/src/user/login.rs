@@ -14,13 +14,14 @@ use infrastructure::diesel::DbPool;
 
 #[debug_handler]
 pub async fn login_user(session: Session, pool: State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
-    debug!("LoginRequest: {:?}", &login_request);
     let user = find_user_by_email(&pool, &login_request.email).await?.0;
     verify_password(&login_request.password, &user.hashed_pw)?;
+
     session.insert("username", user.username.clone()).await?;
-    debug!("username cookie set to: {}", user.username);
+    let inserted_username: String = session.get("username").await?.unwrap_or("no username found".to_string());
+    debug!("username cookie set to: {}", inserted_username);
+
     session.insert("user_email", user.email.clone()).await?;
-    debug!("user_email cookie set to: {}", user.email);
 
     Ok(ApiResponse::Login(LoginResponse {
         message: "login_successful",
