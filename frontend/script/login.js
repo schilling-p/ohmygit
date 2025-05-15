@@ -22,8 +22,7 @@ loginForm.addEventListener("submit", async (event) => {
     const password = document.getElementById("password").value;
 
     try {
-        console.log("Sending login request to: ", `${API_BASE_URL}/${loginRoute}`);
-        const response = await fetch(`${API_BASE_URL}/${loginRoute}`, {
+        const response = await fetch(`/login/`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -36,7 +35,7 @@ loginForm.addEventListener("submit", async (event) => {
 
         if (response.status === 200 && json.type === "Login") {
             statusText.textContent = "Login successful!";
-            window.location.href = `/dashboard/`;
+            //window.location.href = `/dashboard/`;
         } else if (response.status === 401) {
             statusText.textContent = json.error || json.message || "Wrong Login Credentials.";
         } else {

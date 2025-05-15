@@ -14,6 +14,7 @@ use infrastructure::diesel::DbPool;
 
 #[debug_handler]
 pub async fn login_user(session: Session, pool: State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
+    debug!("login request with: {:?} and {:?}", login_request.email, login_request.password);
     let user = find_user_by_email(&pool, &login_request.email).await?.0;
     verify_password(&login_request.password, &user.hashed_pw)?;
 
