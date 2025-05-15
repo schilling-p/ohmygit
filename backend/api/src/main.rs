@@ -3,16 +3,12 @@ use time::Duration as Tduration;
 use axum::response::Response;
 use axum::http::Request;
 use axum::extract::MatchedPath;
-use axum::error_handling::HandleErrorLayer;
-use axum::BoxError;
 use anyhow::Context;
-use http::StatusCode;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tracing::{info_span, Span};
 use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
 use tower_http::cors::CorsLayer;
 use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
-use tower::ServiceBuilder;
 
 use infrastructure::diesel::{init_pool, run_migrations};
 use shared::graceful::shutdown_signal;
@@ -22,33 +18,33 @@ mod routes;
 #[tokio::main]
 async fn main() -> anyhow::Result<()>{
 
-    let session_store = MemoryStore::default();
-    let session_layer = SessionManagerLayer::new(session_store);
+    // TODO: handle the error case better than with unwrap()
+    run_migrations().unwrap();
+    let pool = init_pool();
 
+    // TODO: remove or find better way for production than the current permissive CorsLayer, there is an example in the axum GH repo
+    let session_store = MemoryStore::default();
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_secure(false)
+        .with_expiry(Expiry::OnInactivity(Tduration::seconds(10)));
     let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {"debug, tower_http=debug".into()});
     tracing_subscriber::registry()
         .with(filter)
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    // TODO: handle the error case better than with unwrap()
-    run_migrations().unwrap();
-    let pool = init_pool();
-
     let app = routes::create_routes(pool)
         .layer(tower_http::catch_panic::CatchPanicLayer::new())
-        // TODO: remove or find better way for production than this CorsLayer
         .layer(CorsLayer::permissive())
-        .layer(session_layer)
         .layer(TraceLayer::new_for_http()
             .make_span_with(|request: &Request<_>| {
                 let matched_path = request.extensions().get::<MatchedPath>().map(MatchedPath::as_str);
                 info_span!(
-                    "http_request",
-                    method = ?request.method(),
-                    matched_path,
-                    some_other_field = tracing::field::Empty,
-                )
+                        "http_request",
+                        method = ?request.method(),
+                        matched_path,
+                        some_other_field = tracing::field::Empty,
+                    )
             })
             .on_request(|request: &Request<_>, span: &Span| {
                 if let Some(ip) = request.headers().get("x-forwarded-for") {
@@ -63,7 +59,8 @@ async fn main() -> anyhow::Result<()>{
             .on_failure(|error: ServerErrorsFailureClass, latency: Duration, _span: &Span| {
                 tracing::error!(?error, "Request failed after {:?}", latency.as_millis());
             })
-        );
+        )
+        .layer(session_layer);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.context("failed to bind TCP listener")?;
     tracing::debug!("Listening on: {}", listener.local_addr()?);

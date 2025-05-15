@@ -54,7 +54,6 @@ dependencies = [
  "anyhow",
  "application",
  "axum",
- "axum-macros",
  "deadpool-diesel",
  "domain",
  "http",
