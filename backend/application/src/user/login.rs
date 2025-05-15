@@ -5,7 +5,7 @@ use super::read::find_user_by_email;
 use shared::crypto::verify_password;
 use error::AppError;
 use tracing::debug;
-use tower_sessions::Session;
+use tower_sessions::{Session};
 
 use domain::request::auth::LoginRequest;
 use domain::response::auth::LoginResponse;
@@ -25,6 +25,7 @@ pub async fn login_user(session: Session, pool: State<DbPool>, Json(login_reques
     session.insert("user_email", user.email.clone()).await?;
 
     Ok(ApiResponse::Login(LoginResponse {
+        //session_id: session.id().unwrap_or_default().to_string(),
         message: "login_successful",
         user_email: user.email,
         username: user.username,

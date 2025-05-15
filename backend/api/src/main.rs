@@ -1,23 +1,37 @@
 use std::time::Duration;
+use time::Duration as Tduration;
 use axum::response::Response;
 use axum::http::Request;
 use axum::extract::MatchedPath;
+use axum::error_handling::HandleErrorLayer;
+use axum::BoxError;
 use anyhow::Context;
-use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
+use http::StatusCode;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tracing::{info_span, Span};
+use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
 use tower_http::cors::CorsLayer;
-use tower_sessions::{MemoryStore, SessionManagerLayer};
+use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
+use tower::ServiceBuilder;
 
 use infrastructure::diesel::{init_pool, run_migrations};
 use shared::graceful::shutdown_signal;
+
 mod routes;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()>{
 
     let session_store = MemoryStore::default();
-    let session_layer = SessionManagerLayer::new(session_store);
+    let session_layer = ServiceBuilder::new()
+        .layer(HandleErrorLayer::new(|_: BoxError| async {
+            StatusCode::BAD_REQUEST
+        }))
+        .layer(
+            SessionManagerLayer::new(session_store)
+                .with_secure(false)
+                .with_expiry(Expiry::OnInactivity(Tduration::seconds(10))),
+        );
 
     let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {"debug, tower_http=debug".into()});
     tracing_subscriber::registry()
@@ -65,6 +79,6 @@ async fn main() -> anyhow::Result<()>{
         .with_graceful_shutdown(shutdown_signal())
         .await
         .context("axum:serve failed")?;
- 
+
     Ok(())
 }
