@@ -1010,6 +1010,7 @@ dependencies = [
 name = "infrastructure"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "deadpool-diesel",
  "diesel",
  "diesel_migrations",
@@ -1655,7 +1656,6 @@ name = "templating"
 version = "0.1.0"
 dependencies = [
  "askama",
- "axum",
  "domain",
 ]
 

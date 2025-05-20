@@ -1,4 +1,4 @@
-use axum::{extract::State, extract::Path, Json};
+use axum::{extract::Path};
 use axum_macros::debug_handler;
 use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, BelongingToDsl};
 use tracing::debug;
@@ -6,7 +6,7 @@ use tracing::debug;
 use domain::models::Repository;
 use domain::request::repository::{RepositoryPath};
 use domain::ApiResponse;
-use domain::response::repository::{RepositoryOverview};
+use domain::response::repository::{RepositoryOverview, RepositoryFileInformation};
 use error::AppError;
 use infrastructure::diesel::DbPool;
 use crate::user::read::find_user_by_email;
@@ -26,23 +26,26 @@ pub async fn list_user_repositories(pool: &DbPool, user_email: &str)
     Ok(repos)
 }
 
-#[debug_handler]
-pub async fn get_repository(Path(repo_path): Path<RepositoryPath>) -> Result<ApiResponse, AppError> {
-    let repo_path = format!("/repos/{}/{}.git", repo_path.username, repo_path.repository_name);
-    let repo_overview = get_repo_overview(&repo_path)?;
-
-    Ok(ApiResponse::RepositoryForUser(repo_overview))
-}
-
 pub fn get_repo_overview(repo_path: &str) -> Result<RepositoryOverview, AppError> {
     let git_repo = GitRepository::open(repo_path)?;
     let repo_name = git_repo.get_repository_name()?;
     let commit = git_repo.get_head_commit()?;
-    let entries = git_repo.list_tree(&commit)?;
+    let tree = commit.tree()?;
 
+    let mut files: Vec<RepositoryFileInformation> = Vec::new();
+    for entry in tree.iter() {
+        let name = entry.name().unwrap_or("").to_string();
+        let (message, timestamp) = git_repo.get_last_commit_for_path(&name)?;
+        files.push(RepositoryFileInformation {
+            file_name: name,
+            last_commit_message: message,
+            last_commit_time: timestamp,
+        });
+    }
+    
     Ok(RepositoryOverview {
-        name: repo_name,
+        repo_name,
         latest_commit: commit.id().to_string(),
-        files: entries,
+        files,
     })
 }

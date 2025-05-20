@@ -7,4 +7,3 @@ edition = "2024"
 domain = { path = "../domain" }
 
 askama = "0.14.0"
-axum = "0.8.4"

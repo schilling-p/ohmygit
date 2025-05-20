@@ -16,7 +16,7 @@ pub async fn dashboard(session: Session, State(pool): State<deadpool_diesel::pos
     let username: Option<String> = session.get("username").await?;
 
     let template = DashboardTemplate {
-        name: username.unwrap_or("".to_string()),
+        username: username.unwrap_or("".to_string()).to_uppercase(),
         repositories: user_repositories,
         organizations: user_organizations,
     };

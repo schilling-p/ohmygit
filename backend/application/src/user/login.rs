@@ -25,7 +25,6 @@ pub async fn login_user(session: Session, pool: State<DbPool>, Json(login_reques
     session.insert("user_email", user.email.clone()).await?;
 
     Ok(ApiResponse::Login(LoginResponse {
-        //session_id: session.id().unwrap_or_default().to_string(),
         message: "login_successful",
         user_email: user.email,
         username: user.username,

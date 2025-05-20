@@ -19,6 +19,7 @@ pub enum AppError {
     GitError(Git2Error),
     RenderingError(RenderError),
     SessionError(SessionError),
+    Unauthorized,
 }
 
 impl From<SessionError> for AppError {
@@ -119,6 +120,10 @@ impl IntoResponse for AppError {
                 let body = Json(json!({"error": "session_error", "message": err.to_string()}));
                 (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()           
             }
+            AppError::Unauthorized => {
+                let body = Json(json!({"error": "unauthorized"}));
+                (StatusCode::UNAUTHORIZED, body).into_response()
+            }       
         }
     }
 }

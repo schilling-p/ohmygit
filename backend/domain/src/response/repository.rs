@@ -9,7 +9,14 @@ pub struct ListRepositoriesResponse {
 
 #[derive(Serialize, Debug, PartialEq, Clone)]
 pub struct RepositoryOverview {
-    pub name: String,
+    pub repo_name: String,
     pub latest_commit: String,
-    pub files: Vec<String>,
+    pub files: Vec<RepositoryFileInformation>,
+}
+
+#[derive(Serialize, Debug, PartialEq, Clone)]
+pub struct RepositoryFileInformation {
+    pub file_name: String,
+    pub last_commit_message: String,
+    pub last_commit_time: String,
 }

@@ -11,3 +11,4 @@ diesel_migrations = "2.2.0"
 deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
 dotenvy = "0.15.7"
 git2 = "0.20.2"
+chrono = { version = "0.4.40", features = ["serde"] }
