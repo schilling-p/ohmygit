@@ -7,6 +7,7 @@ use axum::extract::{State};
 use tower_sessions::Session;
 use crate::repository::read::list_user_repositories;
 use crate::organizations::read::list_user_organizations;
+use convert_case::{Case, Casing};
 
 #[debug_handler]
 pub async fn dashboard(session: Session, State(pool): State<deadpool_diesel::postgres::Pool> ) -> Result<impl IntoResponse, AppError> {
@@ -16,7 +17,7 @@ pub async fn dashboard(session: Session, State(pool): State<deadpool_diesel::pos
     let username: Option<String> = session.get("username").await?;
 
     let template = DashboardTemplate {
-        username: username.unwrap_or("".to_string()).to_uppercase(),
+        username: username.unwrap_or("".to_string()).to_case(Case::Pascal),
         repositories: user_repositories,
         organizations: user_organizations,
     };

@@ -5,8 +5,6 @@ use tracing::debug;
 use chrono::DateTime;
 
 use domain::models::Repository;
-use domain::request::repository::{RepositoryPath};
-use domain::ApiResponse;
 use domain::response::repository::{RepositoryOverview, RepositoryFileInformation, CommitInformation};
 use error::AppError;
 use infrastructure::diesel::DbPool;
