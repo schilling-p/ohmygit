@@ -10,3 +10,4 @@ tokio = { version = "1.44.1", features = ["signal"] }
 argon2 = "0.5.3"
 password-hash = "0.5.0"
 rand_core = { version = "0.6", features = ["std"] }
+axum = "0.8.4"

@@ -1,5 +1,5 @@
-use git2::{Repository, Error, Commit, Sort, Time};
-use chrono::{DateTime, NaiveDateTime, Utc};
+use git2::{Repository, Error, Commit, Sort};
+use chrono::{DateTime};
 use error::AppError;
 
 pub struct GitRepository {

@@ -10,18 +10,20 @@ use crate::organizations::read::list_user_organizations;
 use convert_case::{Case, Casing};
 
 #[debug_handler]
-pub async fn dashboard(session: Session, State(pool): State<deadpool_diesel::postgres::Pool> ) -> Result<impl IntoResponse, AppError> {
-    let user_email: String = session.get("user_email").await?.unwrap();
-    let user_repositories = list_user_repositories(&pool, &user_email).await?;
-    let user_organizations = list_user_organizations(&pool, &user_email).await?;
+pub async fn dashboard(session: Session, State(pool): State<deadpool_diesel::postgres::Pool> ) -> Result< impl IntoResponse, AppError> {
+    let user_email: Option<String> = session.get("user_email").await?;
     let username: Option<String> = session.get("username").await?;
 
-    let template = DashboardTemplate {
-        username: username.unwrap_or("".to_string()).to_case(Case::Pascal),
-        repositories: user_repositories,
-        organizations: user_organizations,
-    };
-    let html = template.render()?;
+    if let (Some(user_email), Some(username)) = (user_email, username) {
+        let template = DashboardTemplate {
+            username: username.to_case(Case::Pascal),
+            repositories: list_user_repositories(&pool, &user_email).await?,
+            organizations: list_user_organizations(&pool, &user_email).await?,
+        };
 
-    Ok(Html(html))
+        Ok(Html(template.render()?))
+
+    } else {
+        Err(AppError::Unauthorized)
+    }
 }

@@ -1,4 +1,4 @@
-use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{http::StatusCode, response::{IntoResponse, Response, Redirect}, Json};
 use diesel::result::Error as DieselError;
 use serde_json::json;
 use argon2::password_hash::Error as PasswordHashError;
@@ -24,7 +24,7 @@ pub enum AppError {
 
 impl From<SessionError> for AppError {
     fn from(err: SessionError) -> Self {
-        AppError::SessionError(err)
+        AppError::Unauthorized
     }
 }
 
@@ -121,8 +121,7 @@ impl IntoResponse for AppError {
                 (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()           
             }
             AppError::Unauthorized => {
-                let body = Json(json!({"error": "unauthorized"}));
-                (StatusCode::UNAUTHORIZED, body).into_response()
+                Redirect::to("/login.html").into_response()
             }       
         }
     }
