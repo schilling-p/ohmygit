@@ -9,6 +9,10 @@ body {
     align-items: center;
 }
 
+h1 {
+    color: white;
+}
+
 .navbar {
     position: fixed;
     top: 0;

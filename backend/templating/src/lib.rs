@@ -21,6 +21,7 @@ pub struct DashboardTemplate {
 #[derive(Template)]
 #[template(path = "repository.html")]
 pub struct RepositoryTemplate {
+    pub repository_name: String,
     pub username: String,
     pub overview: RepositoryOverview,
 }

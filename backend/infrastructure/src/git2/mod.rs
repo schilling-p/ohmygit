@@ -47,7 +47,7 @@ impl GitRepository {
                     let time = commit.time();
                     let ts = time.seconds();
                     let naive_datetime = DateTime::from_timestamp(ts, 0).unwrap();
-                    return Ok((msg, naive_datetime.to_rfc3339()));
+                    return Ok((msg, naive_datetime.to_string()));
                 }
             }
         }

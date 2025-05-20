@@ -5,6 +5,7 @@ use askama::Template;
 use axum::extract::{Path};
 use axum_macros::debug_handler;
 use tower_sessions::Session;
+use convert_case::{Case, Casing};
 use crate::repository::read::get_repo_overview;
 use tracing::debug;
 
@@ -16,7 +17,8 @@ pub async fn repository(Path(repository_name): Path<String>, session: Session) -
     debug!("repo_path: {:?}", &repo_path);
     let repo_overview = get_repo_overview(&repo_path)?;
     let template = RepositoryTemplate {
-        username: username.to_uppercase(),
+        repository_name,
+        username: username.to_case(Case::Pascal),
         overview: repo_overview,
     };
 

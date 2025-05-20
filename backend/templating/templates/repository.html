@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %} Repository - {{ username }}{% endblock title %}
+{% block title %} {{ username }}/{{ repository_name }} {% endblock title %}
 {% block head %}
 {% call super() %}
 <script type="module" src="/script/repository.js" defer></script>
@@ -10,8 +10,8 @@
     <header class="repo-header">
         <div class="repo-title">
             <h1>
-                <span class="owner">owner</span> /
-                <span class="repo-name">repository-name</span>
+                <span class="owner">{{ username }}</span> /
+                <span class="repo-name">{{ repository_name }}</span>
             </h1>
         </div>
         <div class="repo-actions">
@@ -23,8 +23,8 @@
         <div class="branch-selector">
             <button class="btn branch">main <i class="icon dropdown"></i></button>
             <div class="commit-info">
-                <span class="last-commit">Last commit: abc123d</span>
-                <span class="commit-time">2 hours ago</span>
+                <span class="last-commit">{{ overview.latest_commit.commit_message }}</span>
+                <span class="commit-time">{{ overview.latest_commit.commit_time }}</span>
             </div>
         </div>
 
