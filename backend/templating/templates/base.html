@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{{ title }} - OhMyGit{% endblock title %}</title>
+    <script type="module" src="/script/common.js" defer></script>
+    <link rel="stylesheet" href="/styles/base.css">
+    {% block head %}{% endblock head %}
+</head>
+<body>
+<div class="navbar">
+  <h1>OhMyGit</h1>
+  <div class="navbar-right">
+    <a href="#">Pull Requests</a>
+    <a href="#">Issues</a>
+    <button class="new-repo-btn">New</button>
+    <div class="dropdown">
+      <button class="dropbtn">Profile
+        <i class="fa fa-caret-down"></i>
+      </button>
+      <div class="dropdown-content">
+        <a href="#">Settings</a>
+        <a href="#">Logout</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% block content %}<p>Placeholder content</p>{% endblock content %}
+<footer class="footer">
+  <div class="footer-content">
+    <div class="footer-links">
+      <a href="#">About</a>
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
+      <a href="#">Contact</a>
+    </div>
+    <div class="footer-copyright">
+      <p>&copy; 2025 OhMyGit. All rights are yours.</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

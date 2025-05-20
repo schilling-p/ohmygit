@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - {{ username }}{% endblock title %}
+{% block head %}
+{% call super() %}
+<script type="module" src="/script/dashboard.js" defer></script>
+<link rel="stylesheet" href="/styles/dashboard.css">
+{% endblock head %}
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-columns">
+        <aside class="sidebar">
+            <div class="section-header">
+                <h2>Organizations</h2>
+            </div>
+            <div id="organizations-list">
+                <ul>
+                    {% for orga in organizations %}
+                    <li>{{ orga.name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </aside>
+        <section class="repos-section">
+            <div class="section-header">
+                <h2>Repositories</h2>
+            </div>
+            <div id="repositories-list">
+                <ul>
+                    {% for repo in repositories %}
+                    <li class="repo-card">
+                        <a href="/repos/{{ repo.name | urlencode }}">{{ repo.name }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock content %}

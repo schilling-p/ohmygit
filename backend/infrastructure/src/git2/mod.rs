@@ -1,4 +1,5 @@
-use git2::{Repository, Error, Commit, Tree, Oid};
+use git2::{Repository, Error, Commit, Sort, Time};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use error::AppError;
 
 pub struct GitRepository {
@@ -7,7 +8,7 @@ pub struct GitRepository {
 
 impl GitRepository {
     pub fn open(path: &str) -> Result<GitRepository, AppError> {
-        let repo = Repository::open(path)?;
+        let repo: Repository = Repository::open(path)?;
         Ok(GitRepository { repo })
     }
     
@@ -19,9 +20,9 @@ impl GitRepository {
     
     pub fn list_tree(&self, commit: &Commit) -> Result<Vec<String>, Error> {
         let tree = commit.tree()?;
-        let mut entries = Vec::new();
+        let mut entries: Vec<String> = Vec::new();
         for entry in tree.iter() {
-            let name = entry.name().unwrap_or("").to_string();
+            let name: String = entry.name().unwrap_or("").to_string();
             entries.push(name);
         }
         Ok(entries)        
@@ -29,5 +30,28 @@ impl GitRepository {
     
     pub fn get_repository_name(&self) -> Result<String, AppError> {
         Ok(self.repo.head()?.name().unwrap_or("").to_string())
+    }
+
+    pub fn get_last_commit_for_path(&self, file_path: &str) -> Result<(String, String), AppError> {
+        let mut revwalk = self.repo.revwalk()?;
+        revwalk.push_head()?;
+        revwalk.set_sorting(Sort::TIME)?;
+        
+        for oid_result in revwalk {
+            let oid = oid_result?;
+            let commit = self.repo.find_commit(oid)?;
+            
+            if let Some(tree) = commit.tree().ok() {
+                if tree.get_path(std::path::Path::new(file_path)).is_ok() {
+                    let msg = commit.summary().unwrap_or("").to_string();
+                    let time = commit.time();
+                    let ts = time.seconds();
+                    let naive_datetime = DateTime::from_timestamp(ts, 0).unwrap();
+                    return Ok((msg, naive_datetime.to_string()));
+                }
+            }
+        }
+        
+        Ok(("No commit".into(), "Unknown time".into()))
     }
 }

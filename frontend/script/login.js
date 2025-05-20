@@ -7,9 +7,10 @@ const loginRoute = "login";
 const healthRoute = "health";
 check_status_button.addEventListener("click", async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/${healthRoute}`);
-        const data = await response.json();
-        statusText.textContent = data.message
+        console.log("Sending health check request to: ", `/health/`);
+        const response = await fetch(`/health/`);
+        const json = await response.json();
+        statusText.textContent = json.data.message
     } catch (error) {
         statusText.textContent = error.message
     }
@@ -21,8 +22,7 @@ loginForm.addEventListener("submit", async (event) => {
     const password = document.getElementById("password").value;
 
     try {
-        console.log("Sending login request to: ", `${API_BASE_URL}/${loginRoute}`);
-        const response = await fetch(`${API_BASE_URL}/${loginRoute}`, {
+        const response = await fetch(`/login/`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -35,9 +35,7 @@ loginForm.addEventListener("submit", async (event) => {
 
         if (response.status === 200 && json.type === "Login") {
             statusText.textContent = "Login successful!";
-            localStorage.setItem("user_email", json.data.user_email);
-            localStorage.setItem("username", json.data.username)
-            window.location.href = "dashboard.html";
+            window.location.href = `/dashboard/`;
         } else if (response.status === 401) {
             statusText.textContent = json.error || json.message || "Wrong Login Credentials.";
         } else {

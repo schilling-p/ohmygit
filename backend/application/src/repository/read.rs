@@ -1,21 +1,22 @@
-use axum::{extract::State, extract::Path, Json};
+use axum::{extract::Path};
 use axum_macros::debug_handler;
 use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, BelongingToDsl};
 use tracing::debug;
+use chrono::DateTime;
 
 use domain::models::Repository;
-use domain::request::repository::{FetchRepositoriesRequest, RepositoryPath};
+use domain::request::repository::{RepositoryPath};
 use domain::ApiResponse;
-use domain::response::repository::{ListRepositoriesResponse, RepositoryOverview};
+use domain::response::repository::{RepositoryOverview, RepositoryFileInformation, CommitInformation};
 use error::AppError;
+use infrastructure::diesel::DbPool;
 use crate::user::read::find_user_by_email;
 use infrastructure::git2::GitRepository;
 
-#[debug_handler]
-pub async fn list_user_repositories(State(pool): State<deadpool_diesel::postgres::Pool>, Json(fetch_repo_request): Json<FetchRepositoriesRequest>)
-    -> Result<ApiResponse, AppError> {
-    debug!("listing user repositories for: {:?}", &fetch_repo_request.user_email);
-    let user = find_user_by_email(&pool, &fetch_repo_request.user_email).await?.0;
+pub async fn list_user_repositories(pool: &DbPool, user_email: &str)
+    -> Result<Vec<Repository>, AppError> {
+    debug!("listing user repositories for: {:?}", user_email);
+    let user = find_user_by_email(&pool, &user_email).await?.0;
     let conn = pool.get().await.map_err(AppError::from)?;
     let repos = conn
         .interact(move |conn| Repository::belonging_to(&user).select(Repository::as_select()).load(conn))
@@ -23,29 +24,35 @@ pub async fn list_user_repositories(State(pool): State<deadpool_diesel::postgres
         .map_err(|e| AppError::UnexpectedError(e.to_string()))?
         .map_err(AppError::from)?;
 
-    Ok(ApiResponse::ListRepositoriesPerUser(ListRepositoriesResponse {
-        repositories: repos,
-        user_email: fetch_repo_request.user_email,
-    }))
-}
-
-#[debug_handler]
-pub async fn get_repository(Path(repo_path): Path<RepositoryPath>) -> Result<ApiResponse, AppError> {
-    let repo_path = format!("/repos/{}/{}.git", repo_path.username, repo_path.repository_name);
-    let repo_overview = get_repo_overview(&repo_path)?;
-
-    Ok(ApiResponse::RepositoryForUser(repo_overview))
+    Ok(repos)
 }
 
 pub fn get_repo_overview(repo_path: &str) -> Result<RepositoryOverview, AppError> {
     let git_repo = GitRepository::open(repo_path)?;
     let repo_name = git_repo.get_repository_name()?;
-    let commit = git_repo.get_head_commit()?;
-    let entries = git_repo.list_tree(&commit)?;
+    let head_commit = git_repo.get_head_commit()?;
+    let tree = head_commit.tree()?;
 
+    let mut files: Vec<RepositoryFileInformation> = Vec::new();
+    for entry in tree.iter() {
+        let file_name = entry.name().unwrap_or("").to_string();
+        let (message, timestamp) = git_repo.get_last_commit_for_path(&file_name)?;
+        files.push(RepositoryFileInformation {
+            file_name,
+            last_commit_message: message,
+            last_commit_time: timestamp,
+        });
+    }
+
+    let head_commit_time = DateTime::from_timestamp(head_commit.time().seconds(), 0).unwrap();
+    let commit_information = CommitInformation {
+        commit_message: head_commit.message().unwrap_or("no commit yet").to_string(),
+        commit_time: head_commit_time.to_string(),
+    };
+    
     Ok(RepositoryOverview {
-        name: repo_name,
-        latest_commit: commit.id().to_string(),
-        files: entries,
+        repository_name: repo_name,
+        latest_commit: commit_information,
+        files,
     })
 }

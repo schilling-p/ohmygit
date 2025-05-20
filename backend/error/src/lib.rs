@@ -3,6 +3,8 @@ use diesel::result::Error as DieselError;
 use serde_json::json;
 use argon2::password_hash::Error as PasswordHashError;
 use git2::Error as Git2Error;
+use askama::Error as RenderError;
+use tower_sessions::session::Error as SessionError;
 
 #[derive(Debug)]
 pub enum AppError {
@@ -15,6 +17,21 @@ pub enum AppError {
     PasswordHashError(PasswordHashError),
     InvalidCredentials,
     GitError(Git2Error),
+    RenderingError(RenderError),
+    SessionError(SessionError),
+    Unauthorized,
+}
+
+impl From<SessionError> for AppError {
+    fn from(err: SessionError) -> Self {
+        AppError::SessionError(err)
+    }
+}
+
+impl From<RenderError> for AppError {
+    fn from(err: RenderError) -> Self {
+        AppError::RenderingError(err)
+    }
 }
 
 impl From<Git2Error> for AppError {
@@ -95,6 +112,18 @@ impl IntoResponse for AppError {
                 let body = Json(json!({"error": "git_error", "message": err.to_string()}));
                 (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
             }
+            AppError::RenderingError(err) => {
+                let body = Json(json!({"error": "template_rendering_error", "message": err.to_string()}));
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            }
+            AppError::SessionError(err) => {
+                let body = Json(json!({"error": "session_error", "message": err.to_string()}));
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()           
+            }
+            AppError::Unauthorized => {
+                let body = Json(json!({"error": "unauthorized"}));
+                (StatusCode::UNAUTHORIZED, body).into_response()
+            }       
         }
     }
 }

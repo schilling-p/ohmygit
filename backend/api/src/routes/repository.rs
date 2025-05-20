@@ -1,10 +1,7 @@
 use axum::Router;
-use axum::routing::{get, post};
-use application::repository::read::{get_repository, list_user_repositories};
+use axum::routing::{get};
+use application::templates::repository::repository;
 
-pub fn routes(pool: deadpool_diesel::postgres::Pool) -> Router {
-    Router::new()
-        .route("/repos/{username}/{repository_name}", post(get_repository))
-        .route("/user_repositories", post(list_user_repositories))
-        .with_state(pool)
+pub fn routes() -> Router {
+    todo!()
 }
