@@ -20,6 +20,8 @@ pub enum AppError {
     RenderingError(RenderError),
     SessionError(SessionError),
     Unauthorized,
+    BadRequest(String),
+    InternalServerError(String),
 }
 
 impl From<SessionError> for AppError {
@@ -122,7 +124,15 @@ impl IntoResponse for AppError {
             }
             AppError::Unauthorized => {
                 Redirect::to("/login.html").into_response()
-            }       
+            }    
+            AppError::BadRequest(msg) => {
+                let body = Json(json!({"error": msg}));
+                (StatusCode::BAD_REQUEST, body).into_response()
+            }  
+            AppError::InternalServerError(msg) => {
+                let body = Json(json!({"error": msg}));
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            }
         }
     }
 }

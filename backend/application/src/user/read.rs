@@ -23,14 +23,25 @@ pub async fn list_users(
 }
 
 #[tracing::instrument(skip(pool))]
-pub async fn find_user_by_email(
-    pool: &DbPool, user_email: &str,
-) -> Result<Json<User>, AppError> {
+pub async fn find_user_by_email(pool: &DbPool, user_email: &str) -> Result<Json<User>, AppError> {
     use domain::schema::users::dsl::*;
     let conn = pool.get().await.map_err(AppError::from)?;
     let email_owned = user_email.to_owned();
     let res = conn
         .interact(move |conn| users.filter(email.eq(email_owned)).select(User::as_select()).first::<User>(conn))
+        .await
+        .map_err(|e| AppError::UnexpectedError(e.to_string()))?
+        .map_err(AppError::from)?;
+    Ok(Json(res))
+}
+
+#[tracing::instrument(skip(pool))]
+pub async fn find_user_by_username(pool: &DbPool, username: &str) -> Result<Json<User>, AppError> {
+    use domain::schema::users::dsl::*;
+    let conn = pool.get().await.map_err(AppError::from)?;
+    let username_owned = username.to_owned();
+    let res = conn
+        .interact(move |conn| users.filter(username.eq(username_owned)).select(User::as_select()).first::<User>(conn))
         .await
         .map_err(|e| AppError::UnexpectedError(e.to_string()))?
         .map_err(AppError::from)?;

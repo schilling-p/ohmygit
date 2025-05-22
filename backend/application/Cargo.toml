@@ -10,6 +10,7 @@ shared = { path = "../shared" }
 error = { path = "../error" }
 templating = { path = "../templating" }
 
+tokio = { version = "1.45.0", features = ["full"] }
 tower-sessions = "0.14.0"
 axum = "0.8.1"
 axum-macros = "0.5.0"
