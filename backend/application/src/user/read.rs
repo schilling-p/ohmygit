@@ -43,6 +43,6 @@ pub async fn retrieve_user_from_db(pool: &DbPool, identifier: UserIdentifier) ->
         .await
         .map_err(|e| AppError::UnexpectedError(e.to_string()))?
         .map_err(AppError::from)?;
-    
+
     Ok(Json(user))
 }
