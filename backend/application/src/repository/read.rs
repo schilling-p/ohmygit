@@ -29,7 +29,10 @@ pub async fn handle_info_refs(
     Path((username, repo_name)): Path<(String, String)>,
     Query(query): Query<InfoRefsQuery>,
     TypedHeader(Authorization(basic)): TypedHeader<Authorization<Basic>>) -> Result<Response, AppError> {
-    // figure out if the repo is public
+    
+    let repo = find_repository_by_name(&pool, &repo_name).await?;
+    // find the repository, 
+    // figure out if the repository is public
     // if public, clone directly
     // if private, go through the authorization process
     // if the user is authorized to clone, good
@@ -61,6 +64,7 @@ pub async fn handle_info_refs(
 
 #[debug_handler]
 pub async fn receive_user_repository(Path((username, repo_name)): Path<(String, String)>, body: axum::body::Bytes) -> Result<Response, AppError> {
+    // enable users to push to the repository stored on disk in the backend container
     // get the repository as the body of the request
     // run the git-receive-pack command
     // send back the result of that command as the response body
@@ -84,7 +88,7 @@ pub async fn send_user_repository(Path((username, repo_name)): Path<(String, Str
     Ok(response)
 }
 
-async fn do_auth(username: &str, password: &str) -> Result<(), AppError> {
+async fn do_user_authorization(username: &str, password: &str) -> Result<(), AppError> {
     Ok(())
 }
 
