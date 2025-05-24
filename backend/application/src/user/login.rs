@@ -14,7 +14,7 @@ use domain::models::User;
 use infrastructure::diesel::DbPool;
 
 #[debug_handler]
-pub async fn user_login_handler(session: Session, pool: State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
+pub async fn user_web_login_handler(session: Session, pool: State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
 
     match login_user(pool, login_request).await {
         Ok(user) => {
