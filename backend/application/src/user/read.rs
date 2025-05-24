@@ -25,7 +25,7 @@ pub async fn list_users(
 }
 
 #[tracing::instrument(skip(pool))]
-pub async fn retrieve_user_from_db(pool: &DbPool, identifier: UserIdentifier) -> Result<Json<User>, AppError> {
+pub async fn retrieve_user_from_db(pool: &DbPool, identifier: UserIdentifier) -> Result<User, AppError> {
     use domain::schema::users::dsl::*;
     let conn = pool.get().await.map_err(AppError::from)?;
     let id_string = match identifier.clone() {
@@ -44,5 +44,5 @@ pub async fn retrieve_user_from_db(pool: &DbPool, identifier: UserIdentifier) ->
         .map_err(|e| AppError::UnexpectedError(e.to_string()))?
         .map_err(AppError::from)?;
 
-    Ok(Json(user))
+    Ok(user)
 }

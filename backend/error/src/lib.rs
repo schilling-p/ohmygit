@@ -20,6 +20,7 @@ pub enum AppError {
     RenderingError(RenderError),
     SessionError(SessionError),
     Unauthorized,
+    GitUnauthorized,
     BadRequest(String),
     InternalServerError(String),
 }
@@ -124,11 +125,14 @@ impl IntoResponse for AppError {
             }
             AppError::Unauthorized => {
                 Redirect::to("/login.html").into_response()
-            }    
+            }
+            AppError::GitUnauthorized => {
+                StatusCode::UNAUTHORIZED.into_response()
+            }
             AppError::BadRequest(msg) => {
                 let body = Json(json!({"error": msg}));
                 (StatusCode::BAD_REQUEST, body).into_response()
-            }  
+            }
             AppError::InternalServerError(msg) => {
                 let body = Json(json!({"error": msg}));
                 (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()

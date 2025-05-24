@@ -13,14 +13,16 @@ use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, BelongingToDsl};
 use diesel::expression_methods::ExpressionMethods;
 use tracing::debug;
 use chrono::DateTime;
+use uuid::Uuid;
 
 use domain::models::{Repository, User};
-use domain::request::auth::UserIdentifier;
+use domain::request::auth::{UserIdentifier, LoginRequest};
 use domain::request::repository::InfoRefsQuery;
 use domain::response::repository::{RepositoryOverview, RepositoryFileInformation, CommitInformation};
 use error::AppError;
 use infrastructure::diesel::DbPool;
 use crate::user::read::retrieve_user_from_db;
+use crate::user::login::login_user;
 use infrastructure::git2::GitRepository;
 
 #[debug_handler]
@@ -29,36 +31,43 @@ pub async fn handle_info_refs(
     Path((username, repo_name)): Path<(String, String)>,
     Query(query): Query<InfoRefsQuery>,
     TypedHeader(Authorization(basic)): TypedHeader<Authorization<Basic>>) -> Result<Response, AppError> {
-    
-    let repo = find_repository_by_name(&pool, &repo_name).await?;
-    // find the repository, 
+    // find the repository,
     // figure out if the repository is public
     // if public, clone directly
     // if private, go through the authorization process
     // if the user is authorized to clone, good
     // if not, return 401
 
-    let credentials = (basic.username(), basic.password());
+    let possible_operations = ["git-upload-pack".to_string(), "git-receive-pack".to_string()];
+    if !possible_operations.contains(&query.service) {
+        return Err(AppError::BadRequest(format!("Unsupported service: {:?}", query.service)))
+    }
 
-
-    // this might make the authentication and authorization harder
-    let possible_operations = vec!["git-upload-pack".to_string(), "git-receive-pack".to_string()];
-
-    if possible_operations.contains(&query.service) {
-        let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
-        let repo_path = PathBuf::from(format!("/repos/{}/{}.git", username, repo_name_no_git));
+    // from here on out the query is supported and can be used
+    let repo = find_repository_by_name(&pool, &repo_name).await?;
+    let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
+    let repo_path = PathBuf::from(format!("/repos/{}/{}.git", username, repo_name_no_git));
+    
+    if repo.is_public && query.service == "git-upload-pack" {
         let output = run_git_advertise_refs(&query.service, repo_path).await?;
         let formatted_output = format_git_advertisement(&query.service, &output);
-        let response = Response::builder()
-            .status(StatusCode::OK)
-            .header(header::CONTENT_TYPE, format!("application/x-{}-advertisement", query.service))
-            .header(header::CACHE_CONTROL, "no-cache")
-            .body(formatted_output.into())
-            .unwrap();
-        Ok(response)
-
+        build_git_advertisement_response(&query.service, formatted_output)
+        
     } else {
-        Err(AppError::BadRequest(format!("Unsupported service: {:?}", query.service)))
+        // in here, the repo is not public or a GET request from the push command is coming in
+        let credentials = (basic.username(), basic.password());
+        let login_request = LoginRequest {
+            identifier: UserIdentifier::Email((&credentials.0).parse::<String>().unwrap()),
+            password: credentials.1.to_string(),
+        };
+
+        let user = login_user(pool, login_request).await.map_err(|_| AppError::GitUnauthorized)?;
+        
+        user_repo_authorization(user,repo).await?;
+        
+        let output = run_git_advertise_refs(&query.service, repo_path).await?;
+        let formatted_output = format_git_advertisement(&query.service, &output);
+        build_git_advertisement_response(&query.service, formatted_output)
     }
 }
 
@@ -88,8 +97,14 @@ pub async fn send_user_repository(Path((username, repo_name)): Path<(String, Str
     Ok(response)
 }
 
-async fn do_user_authorization(username: &str, password: &str) -> Result<(), AppError> {
-    Ok(())
+async fn user_repo_authorization(user: User, repository: Repository) -> Result<(), AppError> {
+    // TODO: cannot do unwrap() because the repository might be owned by an organization
+    let user_id: &Uuid = &user.id;
+    let repo_owner_id: &Uuid = &repository.owner_id.unwrap();
+    if user_id == repo_owner_id{
+        return Ok(())
+    }
+    Err(AppError::GitUnauthorized)
 }
 
 async fn find_repository_by_name(pool: &DbPool, repo_name: &str) -> Result<Repository, AppError> {
@@ -198,7 +213,7 @@ async fn run_git_pack(service: &str, repo_path: PathBuf, body: axum::body::Bytes
 
 pub async fn list_user_repositories(pool: &DbPool, user_email: &str) -> Result<Vec<Repository>, AppError> {
     debug!("listing user repositories for: {:?}", user_email);
-    let user: User = retrieve_user_from_db(&pool, UserIdentifier::Email((&user_email).parse::<String>().unwrap())).await?.0;
+    let user: User = retrieve_user_from_db(&pool, UserIdentifier::Email((&user_email).parse::<String>().unwrap())).await?;
     let conn = pool.get().await.map_err(AppError::from)?;
     let repos = conn
         .interact(move |conn| Repository::belonging_to(&user).select(Repository::as_select()).load(conn))
@@ -207,4 +222,13 @@ pub async fn list_user_repositories(pool: &DbPool, user_email: &str) -> Result<V
         .map_err(AppError::from)?;
 
     Ok(repos)
+}
+
+fn build_git_advertisement_response(service: &str, formatted_output: Vec<u8>) -> Result<Response, AppError> {
+    Ok(Response::builder()
+        .status(StatusCode::OK)
+        .header(header::CONTENT_TYPE, format!("application/x-{}-advertisement", service))
+        .header(header::CACHE_CONTROL, "no-cache")
+        .body(formatted_output.into())
+        .unwrap())
 }
