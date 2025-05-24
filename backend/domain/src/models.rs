@@ -2,7 +2,7 @@ use diesel::{Associations, Identifiable, Insertable, QueryId, Queryable, Queryab
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
-use crate::schema::{users, repositories, organizations, organizations_members};
+use crate::schema::{users, repositories, organizations, organizations_members, user_repository_roles};
 
 #[derive(Selectable, Queryable, QueryableByName, Identifiable, Serialize, QueryId, Clone, Debug, PartialEq)]
 #[diesel(table_name = users)]
@@ -58,6 +58,20 @@ pub struct Organization {
 pub struct OrganizationMember {
     pub user_id: Uuid,
     pub organization_id: Uuid,
+    pub role: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Selectable, Queryable, Identifiable, QueryableByName, Associations, Serialize, QueryId, Clone, Debug, PartialEq)]
+#[diesel(table_name = user_repository_roles)]
+#[diesel(belongs_to(Repository, foreign_key = repository_id))]
+#[diesel(belongs_to(User, foreign_key = user_id))]
+#[diesel(primary_key(user_id, repository_id))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct UserRepositoryRoles {
+    pub user_id: Uuid,
+    pub repository_id: Uuid,
     pub role: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

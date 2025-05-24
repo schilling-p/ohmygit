@@ -17,12 +17,13 @@ use uuid::Uuid;
 
 use domain::models::{Repository, User};
 use domain::request::auth::{UserIdentifier, LoginRequest};
-use domain::request::repository::InfoRefsQuery;
+use domain::request::repository::{InfoRefsQuery,AuthorizationRequest, RepoAction};
 use domain::response::repository::{RepositoryOverview, RepositoryFileInformation, CommitInformation};
 use error::AppError;
 use infrastructure::diesel::DbPool;
 use crate::user::read::retrieve_user_from_db;
 use crate::user::login::login_user;
+use crate::repository::auth::authorize_repository_action;
 use infrastructure::git2::GitRepository;
 
 #[debug_handler]
@@ -54,16 +55,22 @@ pub async fn handle_info_refs(
         build_git_advertisement_response(&query.service, formatted_output)
         
     } else {
-        // in here, the repo is not public or a GET request from the push command is coming in
+        // clone a private repo or push
         let credentials = (basic.username(), basic.password());
         let login_request = LoginRequest {
             identifier: UserIdentifier::Email((&credentials.0).parse::<String>().unwrap()),
             password: credentials.1.to_string(),
         };
-
-        let user = login_user(pool, login_request).await.map_err(|_| AppError::GitUnauthorized)?;
+        let user = login_user(&pool, login_request).await.map_err(|_| AppError::GitUnauthorized)?;
+        // based on the service, build an AuthorizationRequest struct
+        let auth_request = AuthorizationRequest {
+            user,
+            repo,
+            action: RepoAction::Clone
+        };
         
-        user_repo_authorization(user,repo).await?;
+        
+        authorize_repository_action(&pool, auth_request).await?;
         
         let output = run_git_advertise_refs(&query.service, repo_path).await?;
         let formatted_output = format_git_advertisement(&query.service, &output);
@@ -95,16 +102,6 @@ pub async fn send_user_repository(Path((username, repo_name)): Path<(String, Str
         .body(output.into())
         .unwrap();
     Ok(response)
-}
-
-async fn user_repo_authorization(user: User, repository: Repository) -> Result<(), AppError> {
-    // TODO: cannot do unwrap() because the repository might be owned by an organization
-    let user_id: &Uuid = &user.id;
-    let repo_owner_id: &Uuid = &repository.owner_id.unwrap();
-    if user_id == repo_owner_id{
-        return Ok(())
-    }
-    Err(AppError::GitUnauthorized)
 }
 
 async fn find_repository_by_name(pool: &DbPool, repo_name: &str) -> Result<Repository, AppError> {

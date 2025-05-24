@@ -16,7 +16,7 @@ use infrastructure::diesel::DbPool;
 #[debug_handler]
 pub async fn user_web_login_handler(session: Session, pool: State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
 
-    match login_user(pool, login_request).await {
+    match login_user(&pool, login_request).await {
         Ok(user) => {
             session.insert("username", user.username.clone()).await?;
             session.insert("user_email", user.email.clone()).await?;
@@ -32,7 +32,7 @@ pub async fn user_web_login_handler(session: Session, pool: State<DbPool>, Json(
     }
 }
 
-pub async fn login_user(pool: State<DbPool>, login_request: LoginRequest) -> Result<User, AppError> {
+pub async fn login_user(pool: &DbPool, login_request: LoginRequest) -> Result<User, AppError> {
     let user = retrieve_user_from_db(&pool, login_request.identifier).await?;
     match verify_password(&login_request.password, &user.hashed_pw) {
         Ok(_) => Ok(user),
