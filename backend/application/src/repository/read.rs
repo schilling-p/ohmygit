@@ -164,16 +164,16 @@ async fn run_git_advertise_refs(service: &str, repo_path: PathBuf) -> Result<Vec
 }
 
 fn format_git_advertisement(service: &str, body: &[u8]) -> Vec<u8> {
-    let mut out: Vec<u8> = Vec::new();
+    let mut formatted_output: Vec<u8> = Vec::new();
 
     let service_line = format!("# service={}\n", service);
     let pkt_line_len = service_line.len() + 4;
-    write!(&mut out, "{:04x}", pkt_line_len).unwrap();
-    out.extend_from_slice(service_line.as_bytes());
-    out.extend_from_slice(b"0000");
-    out.extend_from_slice(body);
+    write!(&mut formatted_output, "{:04x}", pkt_line_len).unwrap();
+    formatted_output.extend_from_slice(service_line.as_bytes());
+    formatted_output.extend_from_slice(b"0000");
+    formatted_output.extend_from_slice(body);
 
-    out
+    formatted_output
 }
 
 async fn run_git_pack(service: &str, repo_path: PathBuf, body: axum::body::Bytes) -> Result<Vec<u8>, AppError> {
