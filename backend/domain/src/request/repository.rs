@@ -1,3 +1,6 @@
+use axum_extra::{headers, typed_header::TypedHeader};
+use axum_extra::headers::authorization::Basic;
+use headers::Authorization;
 use serde::{Deserialize, Serialize};
 use crate::models::{User, Repository};
 use std::convert::TryFrom;
@@ -13,6 +16,21 @@ pub struct AuthorizationRequest {
     pub user: User,
     pub repo: Repository,
     pub action: RepoAction,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Credentials {
+    pub username: String,
+    pub password: String,
+}
+
+impl From<TypedHeader<Authorization<Basic>>> for Credentials {
+    fn from(auth: TypedHeader<Authorization<Basic>>) -> Self {
+        Credentials {
+            username: auth.username().to_string(),
+            password: auth.password().to_string(),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]

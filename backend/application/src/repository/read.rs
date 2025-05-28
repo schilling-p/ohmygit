@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::process::Stdio;
 use axum::extract::{Path, Query, State};
 use headers::Authorization;
-use axum::http::{header, StatusCode, HeaderMap};
+use axum::http::{header, StatusCode};
 use axum_macros::debug_handler;
 use axum::response::{Response};
 use axum_extra::{headers, typed_header::TypedHeader};
@@ -13,11 +13,10 @@ use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, BelongingToDsl};
 use diesel::expression_methods::ExpressionMethods;
 use tracing::debug;
 use chrono::DateTime;
-use uuid::Uuid;
 
 use domain::models::{Repository, User};
 use domain::request::auth::{UserIdentifier, LoginRequest};
-use domain::request::repository::{InfoRefsQuery,AuthorizationRequest, RepoAction};
+use domain::request::repository::{InfoRefsQuery,AuthorizationRequest, RepoAction, Credentials};
 use domain::response::repository::{RepositoryOverview, RepositoryFileInformation, CommitInformation};
 use error::AppError;
 use infrastructure::diesel::DbPool;
@@ -57,27 +56,11 @@ pub async fn handle_info_refs(
         build_git_advertisement_response(&query.service, formatted_output)
 
     } else {
-        let (username, password) = match opt_auth {
-            Some(TypedHeader(Authorization(basic))) => (basic.username().to_owned(), basic.password().to_owned()),
-            None => {
-                return Err(AppError::GitUnauthorized("Missing username or password from authorization header".into()));
-            }
-        };
-
-        let login_request = LoginRequest {
-            identifier: UserIdentifier::Username(username),
-            password,
-        };
-
-        let user = login_user(&pool, login_request).await.map_err(|_| AppError::GitUnauthorized("Credentials don't check out.".to_string()))?;
+        let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
         let action = RepoAction::try_from(query.service.as_str())?;
-        let auth_request = AuthorizationRequest {
-            user,
-            repo,
-            action,
-        };
 
-        authorize_repository_action(&pool, auth_request).await?;
+        authenticate_and_authorize_user(&pool ,auth_header, repo, action).await?;
+
         let output = run_git_advertise_refs(&query.service, repo_path).await?;
         let formatted_output = format_git_advertisement(&query.service, &output);
         build_git_advertisement_response(&query.service, formatted_output)
@@ -85,40 +68,55 @@ pub async fn handle_info_refs(
 }
 
 #[debug_handler]
-pub async fn receive_user_repository(Path((username, repo_name)): Path<(String, String)>, body: axum::body::Bytes) -> Result<Response, AppError> {
+pub async fn receive_user_repository(pool: State<DbPool>, Path((username, repo_name)): Path<(String, String)>, opt_auth: Option<TypedHeader<Authorization<Basic>>>, body: axum::body::Bytes) -> Result<Response, AppError> {
     // enable users to push to the repository stored on disk in the backend container
     // get the repository as the body of the request
     // run the git-receive-pack command
     // send back the result of that command as the response body
+
     let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
+    let repo = find_repository_by_name(&pool, repo_name_no_git).await?;
+    let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
+    authenticate_and_authorize_user(&pool, auth_header, repo, RepoAction::Push).await?;
+
     let repo_path = PathBuf::from(format!("../repos/{}/{}.git", username, repo_name_no_git));
     debug!("receiving user repository: {:?}", &repo_path);
 
     let service: String = "git-receive-pack".to_string();
     let output = run_git_pack(&service, repo_path, body).await?;
-    let response = Response::builder()
-        .status(StatusCode::OK)
-        .header(header::CONTENT_TYPE, "application/x-git-receive-pack-result")
-        .header(header::CACHE_CONTROL, "no-cache")
-        .body(output.into())
-        .unwrap();
+    let response = build_git_pack_response(&service, output)?;
     Ok(response)
 }
 
+async fn authenticate_and_authorize_user(pool: &State<DbPool>, auth_header: TypedHeader<Authorization<Basic>>, repository: Repository, repo_action: RepoAction) -> Result<(), AppError> {
+    let credentials = Credentials::from(auth_header);
+    let login_request = LoginRequest {
+        identifier: UserIdentifier::Username(credentials.username),
+        password: credentials.password,
+    };
+    let user = login_user(&pool, login_request).await.map_err(|_| AppError::GitUnauthorized("Credentials don't check out.".to_string()))?;
+
+    let auth_request = AuthorizationRequest {
+        user, repo: repository, action: repo_action,
+    };
+    authorize_repository_action(&pool, auth_request).await?;
+
+    Ok(())
+}
+
 #[debug_handler]
-pub async fn send_user_repository(Path((username, repo_name)): Path<(String, String)>, body: axum::body::Bytes) -> Result<Response, AppError> {
+pub async fn send_user_repository(pool: State<DbPool>, Path((username, repo_name)): Path<(String, String)>, opt_auth: Option<TypedHeader<Authorization<Basic>>>, body: axum::body::Bytes) -> Result<Response, AppError> {
+    let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
     let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
     let repo_path = PathBuf::from(format!("../repos/{}/{}", username, repo_name_no_git));
-    debug!("sending user repository: {:?}", &repo_path);
+    let repo = find_repository_by_name(&pool, repo_name_no_git).await?;
+    authenticate_and_authorize_user(&pool, auth_header, repo, RepoAction::Clone).await?;
 
-    let service: String = "git-upload-pack".to_string();
+    debug!("sending user repository: {:?}", &repo_path);
+    let service: &str = "git-upload-pack";
     let output = run_git_pack(&service, repo_path, body).await?;
-    let response = Response::builder()
-        .status(StatusCode::OK)
-        .header(header::CONTENT_TYPE, "application/x-git-upload-pack-result")
-        .header(header::CACHE_CONTROL, "no-cache")
-        .body(output.into())
-        .unwrap();
+    let response = build_git_pack_response(service, output)?;
+
     Ok(response)
 }
 
@@ -221,10 +219,29 @@ async fn run_git_pack(service: &str, repo_path: PathBuf, body: axum::body::Bytes
 
     let status = child.wait().await.map_err(|err| AppError::InternalServerError(format!("Git stdout error: {:?}", err)))?;
     if !status.success() {
-        return Err(AppError::InternalServerError(format!("Git error: {:?}", status)));
+        return Err(AppError::InternalServerError(format!("Git execution error: {:?}", status)));
     }
 
     Ok(output)
+}
+
+fn build_git_advertisement_response(service: &str, formatted_output: Vec<u8>) -> Result<Response, AppError> {
+    Ok(Response::builder()
+        .status(StatusCode::OK)
+        .header(header::CONTENT_TYPE, format!("application/x-{}-advertisement", service))
+        .header(header::CACHE_CONTROL, "no-cache")
+        .body(formatted_output.into())
+        .unwrap())
+}
+
+fn build_git_pack_response(service: &str, output: Vec<u8>) -> Result<Response, AppError> {
+    Ok(Response::builder()
+        .status(StatusCode::OK)
+        .header(header::CONTENT_TYPE, format!("application/x-{}-result", service))
+        .header(header::CACHE_CONTROL, "no-cache")
+        .body(output.into())
+        .unwrap()
+    )
 }
 
 pub async fn list_user_repositories(pool: &DbPool, user_email: &str) -> Result<Vec<Repository>, AppError> {
@@ -238,13 +255,4 @@ pub async fn list_user_repositories(pool: &DbPool, user_email: &str) -> Result<V
         .map_err(AppError::from)?;
 
     Ok(repos)
-}
-
-fn build_git_advertisement_response(service: &str, formatted_output: Vec<u8>) -> Result<Response, AppError> {
-    Ok(Response::builder()
-        .status(StatusCode::OK)
-        .header(header::CONTENT_TYPE, format!("application/x-{}-advertisement", service))
-        .header(header::CACHE_CONTROL, "no-cache")
-        .body(formatted_output.into())
-        .unwrap())
 }
