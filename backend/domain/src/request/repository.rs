@@ -14,8 +14,8 @@ pub struct InfoRefsQuery {
 #[derive(Debug, PartialEq, Clone)]
 pub struct AuthorizationRequest {
     pub user: User,
-    pub repo: Repository,
-    pub action: RepoAction,
+    pub repository: Repository,
+    pub repo_action: RepoAction,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -47,12 +47,12 @@ pub enum RepoAction {
 
 impl TryFrom<&str> for RepoAction {
     type Error = AppError;
-    
+
     fn try_from(service: &str) -> Result<Self, Self::Error> {
         match service {
             "git-upload-pack" => Ok(RepoAction::Clone),
             "git-receive-pack" => Ok(RepoAction::Push),
             _ => Err(AppError::BadRequest(format!("Unknown Git service: {}", service)))
         }
-    }    
+    }
 }

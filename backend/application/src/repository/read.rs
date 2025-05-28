@@ -25,6 +25,10 @@ use crate::user::login::login_user;
 use crate::repository::auth::authorize_repository_action;
 use infrastructure::git2::GitRepository;
 
+const GIT_REPO_PATH: &str = "../repos";
+const GIT_CLONE_PACK: &str = "git-upload-pack";
+const GIT_PUSH_PACK: &str = "git-receive-pack";
+
 // test command: GIT_TRACE_PACKET=1 GIT_TRACE=1 git clone http://0.0.0.0:3001/paul/ohmygit.git
 #[debug_handler]
 pub async fn handle_info_refs(
@@ -32,25 +36,16 @@ pub async fn handle_info_refs(
     Path((username, repo_name)): Path<(String, String)>,
     Query(query): Query<InfoRefsQuery>,
     opt_auth: Option<TypedHeader<Authorization<Basic>>>) -> Result<Response, AppError> {
-    // find the repository,
-    // figure out if the repository is public
-    // if public, clone directly
-    // if private, go through the authorization process
-    // if the user is authorized to clone, good
-    // if not, return 401
-
-    let possible_operations = ["git-upload-pack".to_string(), "git-receive-pack".to_string()];
+    let possible_operations = [GIT_CLONE_PACK.to_string(), GIT_PUSH_PACK.to_string()];
     if !possible_operations.contains(&query.service) {
         return Err(AppError::BadRequest(format!("Unsupported service: {:?}", query.service)))
     }
-
-    // from here on out the query is supported and can be used
+    
     let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
     let repo = find_repository_by_name(&pool, &repo_name_no_git).await?;
-    debug!("found repository: {:?}", repo.name);
-    let repo_path = PathBuf::from(format!("/repos/{}/{}.git", username, repo_name_no_git));
+    let repo_path = PathBuf::from(format!("{GIT_REPO_PATH}/{}/{}.git", username, repo_name_no_git));
 
-    if repo.is_public && query.service == "git-upload-pack" {
+    if repo.is_public && (query.service == GIT_CLONE_PACK) {
         let output = run_git_advertise_refs(&query.service, repo_path).await?;
         let formatted_output = format_git_advertisement(&query.service, &output);
         build_git_advertisement_response(&query.service, formatted_output)
@@ -69,22 +64,32 @@ pub async fn handle_info_refs(
 
 #[debug_handler]
 pub async fn receive_user_repository(pool: State<DbPool>, Path((username, repo_name)): Path<(String, String)>, opt_auth: Option<TypedHeader<Authorization<Basic>>>, body: axum::body::Bytes) -> Result<Response, AppError> {
-    // enable users to push to the repository stored on disk in the backend container
-    // get the repository as the body of the request
-    // run the git-receive-pack command
-    // send back the result of that command as the response body
-
     let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
     let repo = find_repository_by_name(&pool, repo_name_no_git).await?;
     let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
     authenticate_and_authorize_user(&pool, auth_header, repo, RepoAction::Push).await?;
 
-    let repo_path = PathBuf::from(format!("../repos/{}/{}.git", username, repo_name_no_git));
-    debug!("receiving user repository: {:?}", &repo_path);
+    let repo_path = PathBuf::from(format!("{GIT_REPO_PATH}/{}/{}.git", username, repo_name_no_git));
 
-    let service: String = "git-receive-pack".to_string();
+    let service: String = GIT_PUSH_PACK.to_string();
     let output = run_git_pack(&service, repo_path, body).await?;
     let response = build_git_pack_response(&service, output)?;
+    Ok(response)
+}
+
+#[debug_handler]
+pub async fn send_user_repository(pool: State<DbPool>, Path((username, repo_name)): Path<(String, String)>, opt_auth: Option<TypedHeader<Authorization<Basic>>>, body: axum::body::Bytes) -> Result<Response, AppError> {
+    let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
+    let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
+    let repo_path = PathBuf::from(format!("{GIT_REPO_PATH}/{}/{}", username, repo_name_no_git));
+    let repo = find_repository_by_name(&pool, repo_name_no_git).await?;
+    authenticate_and_authorize_user(&pool, auth_header, repo, RepoAction::Clone).await?;
+
+    debug!("sending user repository: {:?}", &repo_path);
+    let service: &str = GIT_CLONE_PACK;
+    let output = run_git_pack(&service, repo_path, body).await?;
+    let response = build_git_pack_response(service, output)?;
+
     Ok(response)
 }
 
@@ -97,27 +102,11 @@ async fn authenticate_and_authorize_user(pool: &State<DbPool>, auth_header: Type
     let user = login_user(&pool, login_request).await.map_err(|_| AppError::GitUnauthorized("Credentials don't check out.".to_string()))?;
 
     let auth_request = AuthorizationRequest {
-        user, repo: repository, action: repo_action,
+        user, repository, repo_action,
     };
     authorize_repository_action(&pool, auth_request).await?;
 
     Ok(())
-}
-
-#[debug_handler]
-pub async fn send_user_repository(pool: State<DbPool>, Path((username, repo_name)): Path<(String, String)>, opt_auth: Option<TypedHeader<Authorization<Basic>>>, body: axum::body::Bytes) -> Result<Response, AppError> {
-    let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
-    let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
-    let repo_path = PathBuf::from(format!("../repos/{}/{}", username, repo_name_no_git));
-    let repo = find_repository_by_name(&pool, repo_name_no_git).await?;
-    authenticate_and_authorize_user(&pool, auth_header, repo, RepoAction::Clone).await?;
-
-    debug!("sending user repository: {:?}", &repo_path);
-    let service: &str = "git-upload-pack";
-    let output = run_git_pack(&service, repo_path, body).await?;
-    let response = build_git_pack_response(service, output)?;
-
-    Ok(response)
 }
 
 async fn find_repository_by_name(pool: &DbPool, repo_name: &str) -> Result<Repository, AppError> {
@@ -163,7 +152,6 @@ pub fn get_repo_overview(repo_path: &str) -> Result<RepositoryOverview, AppError
 }
 
 async fn run_git_advertise_refs(service: &str, repo_path: PathBuf) -> Result<Vec<u8>, AppError> {
-    debug!("running git advertise refs for service: {:?}", service);
     let output = Command::new(service)
         .arg("--stateless-rpc")
         .arg("--advertise-refs")
@@ -193,8 +181,6 @@ fn format_git_advertisement(service: &str, body: &[u8]) -> Vec<u8> {
 }
 
 async fn run_git_pack(service: &str, repo_path: PathBuf, body: axum::body::Bytes) -> Result<Vec<u8>, AppError> {
-    debug!("running git pack for service: {:?}", service);
-    debug!("running git pack with repo path: {:?}", repo_path);
     let mut child = Command::new(service)
         .arg("--stateless-rpc")
         .arg(repo_path)
