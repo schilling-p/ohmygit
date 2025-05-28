@@ -133,7 +133,6 @@ impl IntoResponse for AppError {
                     .header("WWW-Authenticate", r#"Basic realm="Git""#)
                     .body(Body::from(format!("Authorization failed: {:?}", msg)))
                     .unwrap()
-                    
             }
             AppError::BadRequest(msg) => {
                 let body = Json(json!({"error": msg}));

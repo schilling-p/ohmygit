@@ -32,7 +32,7 @@ pub async fn handle_info_refs(
     pool: State<DbPool>,
     Path((username, repo_name)): Path<(String, String)>,
     Query(query): Query<InfoRefsQuery>,
-    TypedHeader(Authorization(basic)): TypedHeader<Authorization<Basic>>) -> Result<Response, AppError> {
+    opt_auth: Option<TypedHeader<Authorization<Basic>>>) -> Result<Response, AppError> {
     // find the repository,
     // figure out if the repository is public
     // if public, clone directly
@@ -44,40 +44,40 @@ pub async fn handle_info_refs(
     if !possible_operations.contains(&query.service) {
         return Err(AppError::BadRequest(format!("Unsupported service: {:?}", query.service)))
     }
-    
+
     // from here on out the query is supported and can be used
     let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
     let repo = find_repository_by_name(&pool, &repo_name_no_git).await?;
     debug!("found repository: {:?}", repo.name);
     let repo_path = PathBuf::from(format!("/repos/{}/{}.git", username, repo_name_no_git));
-    debug!("repo path after construction: {:?}", repo_path);
-    
+
     if repo.is_public && query.service == "git-upload-pack" {
         let output = run_git_advertise_refs(&query.service, repo_path).await?;
         let formatted_output = format_git_advertisement(&query.service, &output);
         build_git_advertisement_response(&query.service, formatted_output)
-        
+
     } else {
-        // clone a private repo or push to any repository
-        let credentials = (basic.username(), basic.password());
-        debug!("login with credentials: {:?}", credentials);
-        let login_request = LoginRequest {
-            identifier: UserIdentifier::Username((&credentials.0).parse::<String>().unwrap()),
-            password: credentials.1.to_string(),
+        let (username, password) = match opt_auth {
+            Some(TypedHeader(Authorization(basic))) => (basic.username().to_owned(), basic.password().to_owned()),
+            None => {
+                return Err(AppError::GitUnauthorized("Missing username or password from authorization header".into()));
+            }
         };
+
+        let login_request = LoginRequest {
+            identifier: UserIdentifier::Username(username),
+            password,
+        };
+
         let user = login_user(&pool, login_request).await.map_err(|_| AppError::GitUnauthorized("Credentials don't check out.".to_string()))?;
-        let debug_user = user.clone();
-        debug!("logged in user: {:?}", user.username);
-        // based on the service, build an AuthorizationRequest struct, currently clone everything
+        let action = RepoAction::try_from(query.service.as_str())?;
         let auth_request = AuthorizationRequest {
             user,
             repo,
-            action: RepoAction::Clone
+            action,
         };
 
         authorize_repository_action(&pool, auth_request).await?;
-        debug!("authorized user: {:?}", debug_user.id);
-        
         let output = run_git_advertise_refs(&query.service, repo_path).await?;
         let formatted_output = format_git_advertisement(&query.service, &output);
         build_git_advertisement_response(&query.service, formatted_output)
@@ -90,13 +90,25 @@ pub async fn receive_user_repository(Path((username, repo_name)): Path<(String, 
     // get the repository as the body of the request
     // run the git-receive-pack command
     // send back the result of that command as the response body
-    todo!()
+    let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
+    let repo_path = PathBuf::from(format!("../repos/{}/{}.git", username, repo_name_no_git));
+    debug!("receiving user repository: {:?}", &repo_path);
+
+    let service: String = "git-receive-pack".to_string();
+    let output = run_git_pack(&service, repo_path, body).await?;
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .header(header::CONTENT_TYPE, "application/x-git-receive-pack-result")
+        .header(header::CACHE_CONTROL, "no-cache")
+        .body(output.into())
+        .unwrap();
+    Ok(response)
 }
 
 #[debug_handler]
 pub async fn send_user_repository(Path((username, repo_name)): Path<(String, String)>, body: axum::body::Bytes) -> Result<Response, AppError> {
     let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
-    let repo_path = PathBuf::from(format!("/repos/{}/{}", username, repo_name_no_git));
+    let repo_path = PathBuf::from(format!("../repos/{}/{}", username, repo_name_no_git));
     debug!("sending user repository: {:?}", &repo_path);
 
     let service: String = "git-upload-pack".to_string();
@@ -154,7 +166,6 @@ pub fn get_repo_overview(repo_path: &str) -> Result<RepositoryOverview, AppError
 
 async fn run_git_advertise_refs(service: &str, repo_path: PathBuf) -> Result<Vec<u8>, AppError> {
     debug!("running git advertise refs for service: {:?}", service);
-    debug!("repo path: {:?}", repo_path);
     let output = Command::new(service)
         .arg("--stateless-rpc")
         .arg("--advertise-refs")
@@ -163,7 +174,6 @@ async fn run_git_advertise_refs(service: &str, repo_path: PathBuf) -> Result<Vec
         .await
         .map_err(|err| AppError::InternalServerError(format!("Git spawn error: {:?}", err)))?;
 
-    debug!("spawned process, waiting for output.");
     if !output.status.success() {
         return Err(AppError::InternalServerError(format!("Git error: {:?}", output.status)));
     }
@@ -185,8 +195,9 @@ fn format_git_advertisement(service: &str, body: &[u8]) -> Vec<u8> {
 }
 
 async fn run_git_pack(service: &str, repo_path: PathBuf, body: axum::body::Bytes) -> Result<Vec<u8>, AppError> {
+    debug!("running git pack for service: {:?}", service);
+    debug!("running git pack with repo path: {:?}", repo_path);
     let mut child = Command::new(service)
-        .arg(service)
         .arg("--stateless-rpc")
         .arg(repo_path)
         .stdin(Stdio::piped())

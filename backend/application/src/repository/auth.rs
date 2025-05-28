@@ -3,7 +3,7 @@ use domain::request::repository::{AuthorizationRequest, RepoAction};
 use infrastructure::diesel::DbPool;
 use crate::user::read::get_user_role_for_repository;
 use error::AppError;
-use uuid::{Timestamp, Uuid};
+use uuid::{Uuid};
 use tracing::debug;
 
 pub async fn authorize_repository_action(pool: &DbPool, auth_request: AuthorizationRequest) -> Result<(), AppError> {
