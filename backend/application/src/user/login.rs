@@ -1,32 +1,43 @@
 use axum::extract::State;
 use axum_macros::debug_handler;
 use axum::Json;
-use super::read::find_user_by_email;
+use super::read::retrieve_user_from_db;
 use shared::crypto::verify_password;
 use error::AppError;
 use tracing::debug;
 use tower_sessions::{Session};
 
-use domain::request::auth::LoginRequest;
+use domain::request::auth::{LoginRequest, UserIdentifier};
 use domain::response::auth::LoginResponse;
 use domain::ApiResponse;
+use domain::models::User;
 use infrastructure::diesel::DbPool;
 
 #[debug_handler]
-pub async fn login_user(session: Session, pool: State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
-    debug!("login request with: {:?} and {:?}", login_request.email, login_request.password);
-    let user = find_user_by_email(&pool, &login_request.email).await?.0;
-    verify_password(&login_request.password, &user.hashed_pw)?;
+pub async fn user_web_login_handler(session: Session, pool: State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
 
-    session.insert("username", user.username.clone()).await?;
-    let inserted_username: String = session.get("username").await?.unwrap_or("no username found".to_string());
-    debug!("username cookie set to: {}", inserted_username);
+    match login_user(&pool, login_request).await {
+        Ok(user) => {
+            session.insert("username", user.username.clone()).await?;
+            session.insert("user_email", user.email.clone()).await?;
 
-    session.insert("user_email", user.email.clone()).await?;
+            Ok(ApiResponse::Login(LoginResponse {
+                message: "login_successful",
+                // TODO: remove for production, is not needed anymore
+                user_email: user.email.clone(),
+                username: user.username.clone(),
+            }))
+        }
+        Err(e) => Err(e),
+    }
+}
 
-    Ok(ApiResponse::Login(LoginResponse {
-        message: "login_successful",
-        user_email: user.email,
-        username: user.username,
-    }))
+pub async fn login_user(pool: &DbPool, login_request: LoginRequest) -> Result<User, AppError> {
+    debug!("login_user: {:?}", login_request);
+    let user = retrieve_user_from_db(&pool, login_request.identifier).await?;
+    debug!("found user: {:?}", user.username);
+    match verify_password(&login_request.password, &user.hashed_pw) {
+        Ok(_) => Ok(user),
+        Err(_) => Err(AppError::Unauthorized),
+    }
 }

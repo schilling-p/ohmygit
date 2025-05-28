@@ -3,8 +3,6 @@ import {API_BASE_URL} from "./common.js";
 const check_status_button = document.getElementById("check-status")
 const loginForm = document.getElementById("loginForm");
 const statusText = document.getElementById("status-output");
-const loginRoute = "login";
-const healthRoute = "health";
 check_status_button.addEventListener("click", async () => {
     try {
         console.log("Sending health check request to: ", `/health/`);
@@ -20,6 +18,10 @@ loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
+    const identifier = {
+        type: "Email",
+        value: email
+    };
 
     try {
         const response = await fetch(`/login/`, {
@@ -27,7 +29,7 @@ loginForm.addEventListener("submit", async (event) => {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({email: email, password: password}),
+            body: JSON.stringify({identifier: identifier, password: password}),
         });
 
         const json = await response.json();

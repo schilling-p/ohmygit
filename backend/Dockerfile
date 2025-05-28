@@ -16,13 +16,17 @@ RUN cargo build && \
 
 ################################################################################
 
-FROM debian:bookworm-slim as final
-
-WORKDIR /app
+FROM debian:bookworm-slim AS final
 
 RUN apt-get update && \
-    apt-get install -y libpq-dev && \
+    apt-get install -y --no-install-recommends \
+    git \
+    ca-certificates \
+    openssh-client \
+    libpq-dev && \
     rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
 
 COPY --from=builder /bin/backend /bin/backend
 COPY wait-for-it.sh /bin/wait-for-it

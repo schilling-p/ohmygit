@@ -10,8 +10,10 @@ shared = { path = "../shared" }
 error = { path = "../error" }
 templating = { path = "../templating" }
 
+tokio = { version = "1.45.0", features = ["full"] }
 tower-sessions = "0.14.0"
-axum = "0.8.1"
+axum = "0.8.4"
+axum-extra = { version = "0.10.1", features = ["typed-header"] }
 axum-macros = "0.5.0"
 diesel = { version = "2.2.8", features = ["postgres", "postgres_backend"] }
 deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
@@ -20,3 +22,4 @@ log = "0.4.27"
 askama = "0.14.0"
 convert_case = "0.8.0"
 chrono = { version = "0.4.40", features = ["serde"] }
+uuid = { version = "1.16.0", features = ["v7"] }

@@ -3,19 +3,21 @@ use axum::Json;
 use diesel::prelude::*;
 use log::debug;
 
-use crate::user::read::find_user_by_email;
+use crate::user::read::retrieve_user_from_db;
 use error::AppError;
 use domain::ApiResponse;
 use domain::models::{NewUser, User};
 use domain::schema::users;
 use domain::response::auth::SignupResponse;
+use domain::request::auth::UserIdentifier;
 use shared::crypto::hash_password;
 
 
 #[tracing::instrument(skip(pool))]
 pub async fn create_user(State(pool): State<deadpool_diesel::postgres::Pool>, Json(mut new_user): Json<NewUser>) -> Result<ApiResponse, AppError> {
     debug!("new_user: {:?}", new_user);
-    match find_user_by_email(&pool, &new_user.email).await {
+    // TODO: optimization of the new_user.email.clone()
+    match retrieve_user_from_db(&pool, UserIdentifier::Email(new_user.email.clone())).await {
         Ok(_) => return Err(AppError::EmailAlreadyExists),
         Err(AppError::NotFound(_)) => {},
         Err(e) => return Err{ 0: e },
