@@ -4,6 +4,7 @@ use serde_json::json;
 use argon2::password_hash::Error as PasswordHashError;
 use git2::Error as Git2Error;
 use askama::Error as RenderError;
+use axum::body::Body;
 use tower_sessions::session::Error as SessionError;
 
 #[derive(Debug)]
@@ -20,7 +21,7 @@ pub enum AppError {
     RenderingError(RenderError),
     SessionError(SessionError),
     Unauthorized,
-    GitUnauthorized,
+    GitUnauthorized(String),
     BadRequest(String),
     InternalServerError(String),
 }
@@ -126,8 +127,13 @@ impl IntoResponse for AppError {
             AppError::Unauthorized => {
                 Redirect::to("/login.html").into_response()
             }
-            AppError::GitUnauthorized => {
-                StatusCode::UNAUTHORIZED.into_response()
+            AppError::GitUnauthorized(msg) => {
+                Response::builder()
+                    .status(StatusCode::UNAUTHORIZED)
+                    .header("WWW-Authenticate", r#"Basic realm="Git""#)
+                    .body(Body::from(format!("Authorization failed: {:?}", msg)))
+                    .unwrap()
+                    
             }
             AppError::BadRequest(msg) => {
                 let body = Json(json!({"error": msg}));

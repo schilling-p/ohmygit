@@ -33,7 +33,9 @@ pub async fn user_web_login_handler(session: Session, pool: State<DbPool>, Json(
 }
 
 pub async fn login_user(pool: &DbPool, login_request: LoginRequest) -> Result<User, AppError> {
+    debug!("login_user: {:?}", login_request);
     let user = retrieve_user_from_db(&pool, login_request.identifier).await?;
+    debug!("found user: {:?}", user.username);
     match verify_password(&login_request.password, &user.hashed_pw) {
         Ok(_) => Ok(user),
         Err(_) => Err(AppError::Unauthorized),

@@ -26,6 +26,7 @@ use crate::user::login::login_user;
 use crate::repository::auth::authorize_repository_action;
 use infrastructure::git2::GitRepository;
 
+// test command: GIT_TRACE_PACKET=1 GIT_TRACE=1 git clone http://0.0.0.0:3001/paul/ohmygit.git
 #[debug_handler]
 pub async fn handle_info_refs(
     pool: State<DbPool>,
@@ -43,11 +44,13 @@ pub async fn handle_info_refs(
     if !possible_operations.contains(&query.service) {
         return Err(AppError::BadRequest(format!("Unsupported service: {:?}", query.service)))
     }
-
+    
     // from here on out the query is supported and can be used
-    let repo = find_repository_by_name(&pool, &repo_name).await?;
     let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
+    let repo = find_repository_by_name(&pool, &repo_name_no_git).await?;
+    debug!("found repository: {:?}", repo.name);
     let repo_path = PathBuf::from(format!("/repos/{}/{}.git", username, repo_name_no_git));
+    debug!("repo path after construction: {:?}", repo_path);
     
     if repo.is_public && query.service == "git-upload-pack" {
         let output = run_git_advertise_refs(&query.service, repo_path).await?;
@@ -55,22 +58,25 @@ pub async fn handle_info_refs(
         build_git_advertisement_response(&query.service, formatted_output)
         
     } else {
-        // clone a private repo or push
+        // clone a private repo or push to any repository
         let credentials = (basic.username(), basic.password());
+        debug!("login with credentials: {:?}", credentials);
         let login_request = LoginRequest {
-            identifier: UserIdentifier::Email((&credentials.0).parse::<String>().unwrap()),
+            identifier: UserIdentifier::Username((&credentials.0).parse::<String>().unwrap()),
             password: credentials.1.to_string(),
         };
-        let user = login_user(&pool, login_request).await.map_err(|_| AppError::GitUnauthorized)?;
-        // based on the service, build an AuthorizationRequest struct
+        let user = login_user(&pool, login_request).await.map_err(|_| AppError::GitUnauthorized("Credentials don't check out.".to_string()))?;
+        let debug_user = user.clone();
+        debug!("logged in user: {:?}", user.username);
+        // based on the service, build an AuthorizationRequest struct, currently clone everything
         let auth_request = AuthorizationRequest {
             user,
             repo,
             action: RepoAction::Clone
         };
-        
-        
+
         authorize_repository_action(&pool, auth_request).await?;
+        debug!("authorized user: {:?}", debug_user.id);
         
         let output = run_git_advertise_refs(&query.service, repo_path).await?;
         let formatted_output = format_git_advertisement(&query.service, &output);
@@ -147,8 +153,9 @@ pub fn get_repo_overview(repo_path: &str) -> Result<RepositoryOverview, AppError
 }
 
 async fn run_git_advertise_refs(service: &str, repo_path: PathBuf) -> Result<Vec<u8>, AppError> {
-    let output = Command::new("git")
-        .arg(service)
+    debug!("running git advertise refs for service: {:?}", service);
+    debug!("repo path: {:?}", repo_path);
+    let output = Command::new(service)
         .arg("--stateless-rpc")
         .arg("--advertise-refs")
         .arg(repo_path)
@@ -156,6 +163,7 @@ async fn run_git_advertise_refs(service: &str, repo_path: PathBuf) -> Result<Vec
         .await
         .map_err(|err| AppError::InternalServerError(format!("Git spawn error: {:?}", err)))?;
 
+    debug!("spawned process, waiting for output.");
     if !output.status.success() {
         return Err(AppError::InternalServerError(format!("Git error: {:?}", output.status)));
     }
@@ -177,7 +185,7 @@ fn format_git_advertisement(service: &str, body: &[u8]) -> Vec<u8> {
 }
 
 async fn run_git_pack(service: &str, repo_path: PathBuf, body: axum::body::Bytes) -> Result<Vec<u8>, AppError> {
-    let mut child = Command::new("git")
+    let mut child = Command::new(service)
         .arg(service)
         .arg("--stateless-rpc")
         .arg(repo_path)

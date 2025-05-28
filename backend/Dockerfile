@@ -16,7 +16,7 @@ RUN cargo build && \
 
 ################################################################################
 
-FROM debian:bookworm-slim as final
+FROM debian:bookworm-slim AS final
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
