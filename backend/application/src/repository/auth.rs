@@ -8,8 +8,8 @@ use tracing::debug;
 
 pub async fn authorize_repository_action(pool: &DbPool, auth_request: AuthorizationRequest) -> Result<(), AppError> {
     let user_id: Uuid = auth_request.user.id;
-    let repo_id: Uuid = auth_request.repo.id;
-    if let Some(owner_id) = auth_request.repo.owner_id {
+    let repo_id: Uuid = auth_request.repository.id;
+    if let Some(owner_id) = auth_request.repository.owner_id {
         if owner_id == user_id {
             return Ok(())
         }
@@ -19,7 +19,7 @@ pub async fn authorize_repository_action(pool: &DbPool, auth_request: Authorizat
     let debug_role = role.clone();
     debug!("User role for repository: {:?}", debug_role.unwrap_or("nothing found".to_string()));
     if let Some(role) = role {
-        match (auth_request.action, role.as_str()) {
+        match (auth_request.repo_action, role.as_str()) {
             (RepoAction::Clone, "reader" | "developer" | "maintainer" | "owner") => Ok(()),
             (RepoAction::Push, "developer" | "maintainer" | "owner") => Ok(()),
             (RepoAction::OpenIssue, "developer" | "maintainer" | "owner") => Ok(()),
