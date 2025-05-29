@@ -1,10 +1,33 @@
-use domain::models::{User, Repository};
-use domain::request::repository::{AuthorizationRequest, RepoAction};
+use axum::extract::State;
+use axum_extra::headers::Authorization;
+use axum_extra::headers::authorization::Basic;
+use axum_extra::TypedHeader;
+use domain::models::Repository;
+use domain::request::repository::{AuthorizationRequest, Credentials, RepoAction};
 use infrastructure::diesel::DbPool;
 use crate::user::read::get_user_role_for_repository;
 use error::AppError;
 use uuid::{Uuid};
 use tracing::debug;
+use domain::request::auth::{LoginRequest, UserIdentifier};
+use crate::user::login::login_user;
+
+pub async fn authenticate_and_authorize_user(pool: &State<DbPool>, auth_header: TypedHeader<Authorization<Basic>>, repository: Repository, repo_action: RepoAction) -> Result<(), AppError> {
+    let credentials = Credentials::from(auth_header);
+    let login_request = LoginRequest {
+        identifier: UserIdentifier::Username(credentials.username),
+        password: credentials.password,
+    };
+    let user = login_user(&pool, login_request).await.map_err(|_| AppError::GitUnauthorized("Credentials don't check out.".to_string()))?;
+
+    let auth_request = AuthorizationRequest {
+        user, repository, repo_action,
+    };
+    authorize_repository_action(&pool, auth_request).await?;
+
+    Ok(())
+}
+
 
 pub async fn authorize_repository_action(pool: &DbPool, auth_request: AuthorizationRequest) -> Result<(), AppError> {
     let user_id: Uuid = auth_request.user.id;
