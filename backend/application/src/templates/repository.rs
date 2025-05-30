@@ -5,7 +5,6 @@ use askama::Template;
 use axum::extract::{Path, State};
 use axum_macros::debug_handler;
 use tower_sessions::Session;
-use convert_case::{Case, Casing};
 use crate::repository::read::get_repo_overview;
 use crate::repository::read::find_repository_by_name;
 use crate::user::read::retrieve_user_from_db;
@@ -22,7 +21,7 @@ pub async fn repository_template(pool: State<DbPool>, Path((username, repository
     let Some(current_user) = session.get::<String>("username").await? else {
         return Err(AppError::Unauthorized);
     };
-    
+
     let repository = find_repository_by_name(&pool, &repo_name).await?;
     if !repository.is_public {
         let repo_action = RepoAction::View;
@@ -31,13 +30,13 @@ pub async fn repository_template(pool: State<DbPool>, Path((username, repository
             user, repository, repo_action
         };
         authorize_repository_action(&pool, auth_request).await?;
-    }    
+    }
 
     let repo_path = format!("/repos/{}/{}.git", repo_owner, repo_name);
     let repo_overview = get_repo_overview(&repo_path)?;
     let template = RepositoryTemplate {
         repository_name: repo_name,
-        username: repo_owner.to_case(Case::Pascal),
+        username: repo_owner,
         overview: repo_overview,
     };
 

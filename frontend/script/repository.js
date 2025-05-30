@@ -1,30 +1,37 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const repo_owner = document.getElementById("repo_owner").textContent;
     const repo_name = document.getElementById("repo_name").textContent;
-    const dropdown_menu = document.getElementById("branch-dropdown-menu");
+    const dropdown_menu = document.getElementById("branch-dropdown-content");
+    const dropdown_button = document.getElementById("branch-dropdown-button");
 
-    document.getElementById("branch-dropdown-toggle").addEventListener("click", async () => {
-        if (dropdown_menu.style.display === "block") {
-            dropdown_menu.style.display = "none";
-            return;
+    dropdown_button.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        const dropdown_is_visible = dropdown_menu.classList.toggle('dropdown-hidden') === false;
+        if (dropdown_is_visible) {
+            try {
+                const response = await fetch(`/repos/${repo_owner}/${repo_name}/branches`);
+                const json = await response.json();
+                const branches = json.data.branches;
+                dropdown_menu.innerHTML = "";
+
+                branches.forEach(branch => {
+                    const item = document.createElement("a");
+                    item.textContent = branch;
+                    dropdown_menu.appendChild(item);
+                });
+            } catch (err) {
+                console.error("Error fetching branches: ", err);
+            }
         }
+    });
 
-        const response = await fetch(`/repos/${repo_owner}/${repo_name}/branches`);
-        if (!response.ok) {
-            console.log("Error fetching branches");
-            return;
-        }
-
-        const json = await response.json();
-        const branches = json.data.branches;
-        dropdown_menu.innerHTML = "";
-
-        branches.forEach(branch => {
-            const li = document.createElement("li");
-            li.textContent = branch;
-            dropdown_menu.appendChild(li);
-        });
-
-        dropdown_menu.style.display = "block";
+    dropdown_menu.addEventListener("click", (event) => {
+        event.stopPropagation();
     })
+
+    window.addEventListener("click", (event) => {
+        if (!dropdown_menu.classList.contains('dropdown-hidden')) {
+            dropdown_menu.classList.add('dropdown-hidden');
+        }
+    });
 });
