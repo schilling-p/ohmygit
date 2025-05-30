@@ -35,6 +35,7 @@ impl From<TypedHeader<Authorization<Basic>>> for Credentials {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum RepoAction {
+    View,
     Clone,
     Push,
     OpenIssue,

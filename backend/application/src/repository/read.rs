@@ -46,8 +46,11 @@ pub fn get_repo_overview(repo_path: &str) -> Result<RepositoryOverview, AppError
         commit_message: head_commit.message().unwrap_or("no commit yet").to_string(),
         commit_time: head_commit_time.to_string(),
     };
+
+    let head_branch_name = git_repo.get_head_branch_name()?;
     
     Ok(RepositoryOverview {
+        head_branch_name,
         repository_name: repo_name,
         latest_commit: commit_information,
         files,

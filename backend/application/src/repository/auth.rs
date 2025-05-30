@@ -43,6 +43,7 @@ pub async fn authorize_repository_action(pool: &DbPool, auth_request: Authorizat
     debug!("User role for repository: {:?}", debug_role.unwrap_or("nothing found".to_string()));
     if let Some(role) = role {
         match (auth_request.repo_action, role.as_str()) {
+            (RepoAction::View, "reader" | "developer" | "maintainer" | "owner") => Ok(()),
             (RepoAction::Clone, "reader" | "developer" | "maintainer" | "owner") => Ok(()),
             (RepoAction::Push, "developer" | "maintainer" | "owner") => Ok(()),
             (RepoAction::OpenIssue, "developer" | "maintainer" | "owner") => Ok(()),

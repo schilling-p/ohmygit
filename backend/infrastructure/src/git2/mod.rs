@@ -1,4 +1,4 @@
-use git2::{Repository, Error, Commit, Sort};
+use git2::{Repository, Error, Commit, Sort, BranchType};
 use chrono::{DateTime};
 use error::AppError;
 
@@ -12,13 +12,19 @@ impl GitRepository {
         Ok(GitRepository { repo })
     }
     
-    pub fn get_head_commit(&self) -> Result<Commit, Error> {
+    pub fn get_head_commit(&self) -> Result<Commit, AppError> {
         let head = self.repo.head()?;
         let commit = head.peel_to_commit()?;
         Ok(commit)
     }
     
-    pub fn list_tree(&self, commit: &Commit) -> Result<Vec<String>, Error> {
+    pub fn get_head_branch_name(&self) -> Result<String, AppError> {
+        let head = self.repo.head()?;
+        let head_branch = head.shorthand().unwrap_or("").to_string();
+        Ok(head_branch)   
+    }
+    
+    pub fn list_tree(&self, commit: &Commit) -> Result<Vec<String>, AppError> {
         let tree = commit.tree()?;
         let mut entries: Vec<String> = Vec::new();
         for entry in tree.iter() {
@@ -53,5 +59,29 @@ impl GitRepository {
         }
         
         Ok(("No commit".into(), "Unknown time".into()))
+    }
+
+    pub fn list_local_branches(&self) -> Result<Vec<String>, AppError> {
+        let mut branches = Vec::new();
+        for branch in self.repo.branches(Some(BranchType::Local))? {
+            let (branch, _) = branch?;
+            if let Some(name) = branch.name()? {
+                branches.push(name.to_string());
+            }
+        }
+        Ok(branches)
+    }
+
+    pub fn create_branch(&self, new_branch: &str, base_branch: &str, switch_head: bool) -> Result<(), AppError> {
+        let base = self.repo.find_branch(base_branch, BranchType::Local)?;
+        let target = base.get().target().ok_or(Error::from_str("No target branch found"))?;
+        let commit = self.repo.find_commit(target)?;
+        self.repo.branch(new_branch, &commit, false)?;
+        if switch_head {
+            let reference = format!("refs/heads/{}", new_branch);
+            self.repo.set_head(&reference)?;
+        }
+
+        Ok(())
     }
 }

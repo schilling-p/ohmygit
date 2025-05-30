@@ -10,7 +10,7 @@ use crate::organizations::read::list_user_organizations;
 use convert_case::{Case, Casing};
 
 #[debug_handler]
-pub async fn dashboard(session: Session, State(pool): State<deadpool_diesel::postgres::Pool> ) -> Result< impl IntoResponse, AppError> {
+pub async fn dashboard_template(session: Session, State(pool): State<deadpool_diesel::postgres::Pool> ) -> Result< impl IntoResponse, AppError> {
     let user_email: Option<String> = session.get("user_email").await?;
     let username: Option<String> = session.get("username").await?;
 

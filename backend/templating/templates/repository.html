@@ -10,8 +10,8 @@
     <header class="repo-header">
         <div class="repo-title">
             <h1>
-                <span class="owner">{{ username }}</span> /
-                <span class="repo-name">{{ repository_name }}</span>
+                <span id="repo_owner" class="owner">{{ username }}</span> /
+                <span id="repo_name" class="repo-name">{{ repository_name }}</span>
             </h1>
         </div>
         <div class="repo-actions">
@@ -20,8 +20,12 @@
     </header>
     
     <main class="repo-content">
+        
         <div class="branch-selector">
-            <button class="btn branch">main <i class="icon dropdown"></i></button>
+            <button id="branch-dropdown-toggle" class="btn branch">{{ overview.head_branch_name }} <i class="icon dropdown"></i></button>
+            <ul id="branch-dropdown-menu" class="dropdown-menu" style="display: none;">
+                
+            </ul>
             <div class="commit-info">
                 <span class="last-commit">{{ overview.latest_commit.commit_message }}</span>
                 <span class="commit-time">{{ overview.latest_commit.commit_time }}</span>

@@ -63,6 +63,26 @@ body {
     cursor: pointer;
 }
 
+.dropdown-menu {
+    position: absolute;
+    margin-top: 5px;
+    padding: 0;
+    background: white;
+    border: 1px solid #ccc;
+    list-style: none;
+    width: fit-content;
+    z-index: 1000;
+}
+
+.dropdown-menu li {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.dropdown-menu li:hover {
+    background-color: #f5f5f5;
+}
+
 .commit-info {
     font-size: 12px;
     color: #586069;
