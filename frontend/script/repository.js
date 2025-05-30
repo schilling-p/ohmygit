@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 branches.forEach(branch => {
                     const item = document.createElement("a");
                     item.textContent = branch;
+                    item.href = `/repos/${repo_owner}/${repo_name}/branch/${branch}`;
+                    item.classList.add("dropdown-item");
+                    
                     dropdown_menu.appendChild(item);
                 });
             } catch (err) {

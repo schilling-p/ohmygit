@@ -15,14 +15,22 @@ use tracing::debug;
 use domain::request::auth::UserIdentifier;
 
 #[debug_handler]
-pub async fn repository_template(pool: State<DbPool>, Path((username, repository_name)): Path<(String, String)>, session: Session) -> Result<impl IntoResponse, AppError> {
-    let repo_owner = username;
-    let repo_name = repository_name;
+pub async fn repository_template_default(State(pool): State<DbPool>, Path((username, repository_name)): Path<(String, String)>, session: Session) -> Result<impl IntoResponse, AppError> {
+    let branch_name = None;
+    handle_repository_view(pool, username, repository_name, branch_name, session).await
+}
+
+pub async fn repository_template_for_branch(State(pool): State<DbPool>, Path((username, repository_name, branch_name)): Path<(String, String, String)>, session: Session) -> Result<impl IntoResponse, AppError> {
+    let branch_name = Some(branch_name);
+    handle_repository_view(pool, username, repository_name, branch_name, session).await
+}
+
+async fn handle_repository_view (pool: DbPool, username: String, repository_name: String, branch_name: Option<String>, session: Session) -> Result<impl IntoResponse, AppError> {
     let Some(current_user) = session.get::<String>("username").await? else {
         return Err(AppError::Unauthorized);
     };
 
-    let repository = find_repository_by_name(&pool, &repo_name).await?;
+    let repository = find_repository_by_name(&pool, &repository_name).await?;
     if !repository.is_public {
         let repo_action = RepoAction::View;
         let user = retrieve_user_from_db(&pool, UserIdentifier::Username(current_user)).await?;
@@ -32,15 +40,16 @@ pub async fn repository_template(pool: State<DbPool>, Path((username, repository
         authorize_repository_action(&pool, auth_request).await?;
     }
 
-    let repo_path = format!("/repos/{}/{}.git", repo_owner, repo_name);
-    let repo_overview = get_repo_overview(&repo_path)?;
+    let repo_path = format!("/repos/{}/{}.git", username, repository_name);
+    let repo_overview = get_repo_overview(&repo_path, branch_name.as_deref())?;
     let template = RepositoryTemplate {
-        repository_name: repo_name,
-        username: repo_owner,
+        repository_name,
+        username,
         overview: repo_overview,
     };
 
-    let html = template.render()?;
-
-    Ok(Html(html))
+    Ok(Html(template.render()?))
 }
+
+
+

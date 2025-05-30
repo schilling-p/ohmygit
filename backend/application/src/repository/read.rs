@@ -8,6 +8,7 @@ use domain::request::auth::{UserIdentifier};
 use domain::response::repository::{RepositoryOverview, RepositoryFileInformation, CommitInformation};
 use error::AppError;
 use infrastructure::diesel::DbPool;
+use infrastructure::git2;
 use infrastructure::git2::GitRepository;
 
 use crate::user::read::retrieve_user_from_db;
@@ -24,16 +25,21 @@ pub async fn find_repository_by_name(pool: &DbPool, repo_name: &str) -> Result<R
     Ok(repo)
 }
 
-pub fn get_repo_overview(repo_path: &str) -> Result<RepositoryOverview, AppError> {
+pub fn get_repo_overview(repo_path: &str, branch_name: Option<&str>) -> Result<RepositoryOverview, AppError> {
     let git_repo = GitRepository::open(repo_path)?;
     let repo_name = git_repo.get_repository_name()?;
-    let head_commit = git_repo.get_head_commit()?;
+    let head_commit = if let Some(branch_name) = branch_name {
+        git_repo.get_commit_from_branch(branch_name)?
+    } else {
+        git_repo.get_head_commit()?
+    };
+
     let tree = head_commit.tree()?;
 
     let mut files: Vec<RepositoryFileInformation> = Vec::new();
     for entry in tree.iter() {
         let file_name = entry.name().unwrap_or("").to_string();
-        let (message, timestamp) = git_repo.get_last_commit_for_path(&file_name)?;
+        let (message, timestamp) = git_repo.get_last_commit_from_path(&file_name)?;
         files.push(RepositoryFileInformation {
             file_name,
             last_commit_message: message,
@@ -47,7 +53,10 @@ pub fn get_repo_overview(repo_path: &str) -> Result<RepositoryOverview, AppError
         commit_time: head_commit_time.to_string(),
     };
 
-    let head_branch_name = git_repo.get_head_branch_name()?;
+    let head_branch_name = match branch_name {
+        Some(name) => name.to_owned(),
+        None => git_repo.get_branch_name_from_head()?,
+    };
     
     Ok(RepositoryOverview {
         head_branch_name,
