@@ -47,11 +47,11 @@ body {
     gap: .5rem;
 }
 
-.branch-dropdown {
+.branch-menu {
     float: left;
 }
 
-.branch-dropdown-button {
+.branch-menu-button {
     display: flex;
     align-items: center;
     gap: .5rem;
@@ -63,7 +63,7 @@ body {
     font-weight: 500;
 }
 
-.branch-dropdown-button svg {
+.branch-menu-button svg {
     fill: currentColor;
 }
 

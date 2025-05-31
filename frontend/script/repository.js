@@ -3,6 +3,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const repo_name = document.getElementById("repo_name").textContent;
     const dropdown_menu = document.getElementById("branch-dropdown-content");
     const dropdown_button = document.getElementById("branch-dropdown-button");
+    const new_branch_button = document.getElementById("new-branch-button");
+
+    new_branch_button.addEventListener("click", () => {
+        // TODO: send POST request to create new branch
+    })
 
     dropdown_button.addEventListener("click", async (event) => {
         event.stopPropagation();

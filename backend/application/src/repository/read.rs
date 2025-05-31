@@ -35,11 +35,12 @@ pub fn get_repo_overview(repo_path: &str, branch_name: Option<&str>) -> Result<R
     };
 
     let tree = head_commit.tree()?;
+    let head_commit_oid = head_commit.id();
 
     let mut files: Vec<RepositoryFileInformation> = Vec::new();
     for entry in tree.iter() {
         let file_name = entry.name().unwrap_or("").to_string();
-        let (message, timestamp) = git_repo.get_last_commit_from_path(&file_name)?;
+        let (message, timestamp) = git_repo.get_last_commit_from_path(&file_name, head_commit_oid)?;
         files.push(RepositoryFileInformation {
             file_name,
             last_commit_message: message,

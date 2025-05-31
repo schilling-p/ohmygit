@@ -1,4 +1,4 @@
-use git2::{Repository, Error, Commit, Sort, BranchType};
+use git2::{Repository, Error, Commit, Sort, BranchType, Oid};
 use chrono::{DateTime};
 use error::AppError;
 
@@ -45,9 +45,9 @@ impl GitRepository {
         Ok(self.repo.head()?.name().unwrap_or("No Head found").to_string())
     }
 
-    pub fn get_last_commit_from_path(&self, file_path: &str) -> Result<(String, String), AppError> {
+    pub fn get_last_commit_from_path(&self, file_path: &str, from_oid: Oid) -> Result<(String, String), AppError> {
         let mut revwalk = self.repo.revwalk()?;
-        revwalk.push_head()?;
+        revwalk.push(from_oid)?;
         revwalk.set_sorting(Sort::TIME)?;
 
         for oid_result in revwalk {
