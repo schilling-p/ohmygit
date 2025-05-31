@@ -76,7 +76,7 @@ impl GitRepository {
                 branches.push(name.to_string());
             }
         }
-        Ok(branches)
+        Ok(branches) 
     }
 
     pub fn create_branch(&self, new_branch: &str, base_branch: &str, switch_head: bool) -> Result<(), AppError> {
