@@ -34,14 +34,15 @@
                 <strong>New branch</strong>
             </button>
         </div>
-
-        <div class="commit-info">
-            <span class="last-commit">{{ overview.latest_commit.commit_message }}</span>
-            <span class="commit-time">{{ overview.latest_commit.commit_time }}</span>
-        </div>
-
-        <div class="repo-actions">
-            <button class="btn primary">Clone</button>
+        
+        <div class="repo-description">
+            <div class="commit-info">
+                <span class="last-commit">{{ overview.latest_commit.commit_message }}</span>
+                <span class="commit-time">{{ overview.latest_commit.commit_time }}</span>
+            </div>
+            <div class="repo-actions">
+                <button class="btn primary">Clone</button>
+            </div>
         </div>
     </div>
 
