@@ -37,6 +37,7 @@ async fn create_repository_view(pool: DbPool, username: String, repository_name:
         .await?
         .as_deref()
         == Some(&format!("{}:{}", username, repository_name));
+    debug!("is_recently_authorized: {:?}", is_recently_authorized);
 
     let repository = find_repository_by_name(&pool, &repository_name).await?;
     if !repository.is_public && !is_recently_authorized {

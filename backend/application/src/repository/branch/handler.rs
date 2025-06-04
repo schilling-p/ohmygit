@@ -3,6 +3,7 @@ use axum::extract::Json;
 use axum::response::{IntoResponse, Redirect};
 use axum_macros::debug_handler;
 use tower_sessions::Session;
+use tracing::debug;
 use domain::ApiResponse;
 use domain::request::auth::UserIdentifier;
 use error::AppError;
@@ -41,13 +42,18 @@ pub async fn create_repository_branch(session: Session, State(pool): State<DbPoo
 
     let repo_path = format!("/repos/{}/{}.git", &username, &repo_name);
     let git_repo = GitRepository::open(&repo_path)?;
+    debug!("Creating branch for repo: {}", repo_path);
+    debug!("Creating branch with name: {} from base branch: {}", create_branch_request.new_branch_name, create_branch_request.base_branch_name);
     git_repo.create_branch(&create_branch_request.new_branch_name, &create_branch_request.base_branch_name, create_branch_request.switch_head)?;
+    debug!("Branch created successfully");
 
-    write_branch_to_database(&pool, &create_branch_request.new_branch_name).await?;
+    //write_branch_to_database(&pool, &create_branch_request.new_branch_name).await?;
 
     let recently_authorized_key = format!("{}:{}", &username, &repo_name);
-    session.insert("recently_authorized_repo", recently_authorized_key).await?;
+    session.insert("recentlyAuthorizedRepo", recently_authorized_key).await?;
+    debug!("Session has been updated");
 
     let redirect_url = format!("/repos/{}/{}/branch/{}", username, repo_name, create_branch_request.new_branch_name);
+    debug!("Redirecting to: {}", redirect_url);
     Ok(Redirect::to(&redirect_url))
 }

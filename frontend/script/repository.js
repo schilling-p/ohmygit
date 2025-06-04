@@ -5,10 +5,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dropdownMenu = document.getElementById("branch-dropdown-content");
     const branchDropdownButton = document.getElementById("branch-dropdown-button");
 
-    const newBranchDropdownButton = document.getElementById("new-branch-dropdown-button");
     const newBranchDropdownMenu = document.getElementById("new-branch-dropdown-content");
+    const newBranchDropdownButton = document.getElementById("new-branch-dropdown-button");
     const createBranchButton = document.getElementById("create-branch-button");
     const baseBranchSelector = document.getElementById("base-branch-selector");
+
+    const newBranchNameInput = document.getElementById("new-branch-name");
+    const newBranchBaseBranchSelector = document.getElementById("base-branch-selector");
 
     const repository_branches = [];
     try {
@@ -39,32 +42,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     branchDropdownButton.addEventListener("click", (event) => {
         event.stopPropagation();
+
+        if (!newBranchDropdownMenu.classList.contains('dropdown-hidden')) {
+            newBranchDropdownMenu.classList.add('dropdown-hidden');
+        }
+
         dropdownMenu.classList.toggle('dropdown-hidden');
     });
+
+    newBranchDropdownButton.addEventListener("click", (event) => {
+        newBranchNameInput.value = "";
+        baseBranchSelector.selectedIndex = 0;
+        event.stopPropagation();
+
+        if (!dropdownMenu.classList.contains('dropdown-hidden')) {
+            dropdownMenu.classList.add('dropdown-hidden');
+        }
+
+        newBranchDropdownMenu.classList.toggle('dropdown-hidden');
+    });
+
+    newBranchDropdownMenu.addEventListener("click", (event) => {
+        event.stopPropagation();
+
+    })
 
     dropdownMenu.addEventListener("click", (event) => {
         event.stopPropagation();
     })
 
-    newBranchDropdownButton.addEventListener("click", (event) => {
-        event.stopPropagation()
-        newBranchDropdownMenu.classList.toggle('dropdown-hidden');
-    });
-
     window.addEventListener("click", (event) => {
-        if (!dropdownMenu.classList.contains('dropdown-hidden')) {
-            dropdownMenu.classList.add('dropdown-hidden');
-        }
-
-        if (!baseBranchSelector.classList.contains('dropdown-hidden')) {
-            baseBranchSelector.classList.add('dropdown-hidden');
-        }
+        closeAllDropdowns();
     });
 
     createBranchButton.addEventListener("click", (event) => {
         event.stopPropagation();
         const newBranchName = document.getElementById("new-branch-name").value;
-        const baseBranch = document.getElementById("base-branch").value;
+        const baseBranch = document.getElementById("base-branch-selector").value;
 
         if (!newBranchName || !baseBranch) {
             alert("Please enter a valid branch name and choose a base branch.");
@@ -90,4 +104,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error("Error creating branch: ", err);
         }
     })
+
+    function closeAllDropdowns() {
+        dropdownMenu.classList.add('dropdown-hidden');
+        newBranchDropdownMenu.classList.add('dropdown-hidden');
+    }
 });
