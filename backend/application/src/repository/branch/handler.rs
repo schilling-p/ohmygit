@@ -1,5 +1,6 @@
 use axum::extract::{Path, State};
 use axum::extract::Json;
+use axum::http::StatusCode;
 use axum::response::{IntoResponse, Redirect};
 use axum_macros::debug_handler;
 use tower_sessions::Session;
@@ -50,10 +51,10 @@ pub async fn create_repository_branch(session: Session, State(pool): State<DbPoo
     //write_branch_to_database(&pool, &create_branch_request.new_branch_name).await?;
 
     let recently_authorized_key = format!("{}:{}", &username, &repo_name);
-    session.insert("recentlyAuthorizedRepo", recently_authorized_key).await?;
+    session.insert("recently_authorized_repo", recently_authorized_key).await?;
     debug!("Session has been updated");
 
     let redirect_url = format!("/repos/{}/{}/branch/{}", username, repo_name, create_branch_request.new_branch_name);
     debug!("Redirecting to: {}", redirect_url);
-    Ok(Redirect::to(&redirect_url))
+    Ok(StatusCode::OK)
 }

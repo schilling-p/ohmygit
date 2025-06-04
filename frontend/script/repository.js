@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeAllDropdowns();
     });
 
-    createBranchButton.addEventListener("click", (event) => {
+    createBranchButton.addEventListener("click", async (event) => {
         event.stopPropagation();
         const newBranchName = document.getElementById("new-branch-name").value;
         const baseBranch = document.getElementById("base-branch-selector").value;
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const response = fetch(`/repos/${repoOwner}/${repoName}/branches`, {
+            const response = await fetch(`/repos/${repoOwner}/${repoName}/branches`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -96,14 +96,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     base_branch_name: baseBranch,
                     switch_head: false
                 }),
-            });
-            if (!response.ok) {
-                console.log("Error creating branch: ", response);
+            })
+            if (response.ok) {
+                console.log(`Branch created successfully, redirecting to {/repos/${repoOwner}/${repoName}/branch/${newBranchName}`)
+                window.location.href = `/repos/${repoOwner}/${repoName}/branch/${newBranchName}`;
             }
         } catch (err) {
             console.error("Error creating branch: ", err);
         }
-    })
+    });
 
     function closeAllDropdowns() {
         dropdownMenu.classList.add('dropdown-hidden');

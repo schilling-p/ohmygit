@@ -31,12 +31,12 @@ async fn create_repository_view(pool: DbPool, username: String, repository_name:
     let Some(current_user) = session.get::<String>("username").await? else {
         return Err(AppError::Unauthorized);
     };
-
+    
     let is_recently_authorized: bool = session
         .get::<String>("recently_authorized_repo")
         .await?
         .as_deref()
-        == Some(&format!("{}:{}", username, repository_name));
+       == Some(&format!("{}:{}", username, repository_name));
     debug!("is_recently_authorized: {:?}", is_recently_authorized);
 
     let repository = find_repository_by_name(&pool, &repository_name).await?;
