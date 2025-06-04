@@ -5,11 +5,12 @@ use axum_extra::TypedHeader;
 use domain::models::Repository;
 use domain::request::repository::{AuthorizationRequest, Credentials, RepoAction};
 use infrastructure::diesel::DbPool;
-use crate::user::read::get_user_role_for_repository;
+use crate::user::read::{get_user_role_for_repository, retrieve_user_from_db};
 use error::AppError;
 use uuid::{Uuid};
 use tracing::debug;
 use domain::request::auth::{LoginRequest, UserIdentifier};
+use crate::repository::read::find_repository_by_name;
 use crate::user::login::login_user;
 
 pub async fn authenticate_and_authorize_user(pool: &State<DbPool>, auth_header: TypedHeader<Authorization<Basic>>, repository: Repository, repo_action: RepoAction) -> Result<(), AppError> {
@@ -26,6 +27,14 @@ pub async fn authenticate_and_authorize_user(pool: &State<DbPool>, auth_header: 
     authorize_repository_action(&pool, auth_request).await?;
 
     Ok(())
+}
+
+pub async fn create_authorization_request(pool: &DbPool, username: String, repo_name: String, repo_action: RepoAction) -> Result<AuthorizationRequest, AppError> {
+    let repository = find_repository_by_name(&pool, &repo_name).await?;
+    let user = retrieve_user_from_db(&pool, UserIdentifier::Username(username)).await?;
+    Ok(AuthorizationRequest {
+        user, repository, repo_action,
+    })   
 }
 
 
@@ -52,6 +61,7 @@ pub async fn authorize_repository_action(pool: &DbPool, auth_request: Authorizat
             (RepoAction::CreateMergeRequest, "developer" | "maintainer" | "owner") => Ok(()),
             (RepoAction::ApproveMergeRequest, "developer" | "maintainer" | "owner") => Ok(()),
             (RepoAction::ManageRepoSettings, "maintainer" | "owner") => Ok(()),
+            (RepoAction::CreateBranch, "developer" | "maintainer" | "owner") => Ok(()),
             _ => Err(AppError::GitUnauthorized("User role does not have permission to perform this action.".to_string()))
         }
     } else {

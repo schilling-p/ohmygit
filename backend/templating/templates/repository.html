@@ -30,11 +30,32 @@
             <div id="branch-dropdown-content" class="dropdown-hidden">
 
             </div>
-            <button id="new-branch-button" class="branch-menu-button"> 
-                <strong>New branch</strong>
-            </button>
+            <div id="new-branch-container">
+                <button id="new-branch-dropdown-button" class="branch-menu-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16" fill="none" >
+                        <path d="M6 12H18M12 6V18" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <strong>New branch</strong>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" class="svg octicon-git-branch">
+                        <path d="m4.427 7.427 3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427"></path>
+                    </svg>
+                </button>
+                <div id="new-branch-dropdown-content" class="dropdown-hidden">
+                    <label for="new-branch-name">Branch name:</label>
+                    <input type="text" id="new-branch-name" placeholder="e.g. feature-x" />
+
+                    <label for="base-branch-selector">
+                        Base branch <small>(defaults to current branch)</small>
+                    </label>
+                    <select id="base-branch-selector">
+
+                    </select>
+                    <button id="create-branch-button" class="branch-menu-button">Create</button>
+                </div>
+            </div>
+
         </div>
-        
+
         <div class="repo-description">
             <div class="commit-info">
                 <span class="last-commit">{{ overview.latest_commit.commit_message }}</span>

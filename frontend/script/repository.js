@@ -1,45 +1,93 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    const repo_owner = document.getElementById("repo_owner").textContent;
-    const repo_name = document.getElementById("repo_name").textContent;
-    const dropdown_menu = document.getElementById("branch-dropdown-content");
-    const dropdown_button = document.getElementById("branch-dropdown-button");
-    const new_branch_button = document.getElementById("new-branch-button");
+    const repoOwner = document.getElementById("repo_owner").textContent;
+    const repoName = document.getElementById("repo_name").textContent;
 
-    new_branch_button.addEventListener("click", () => {
-        // TODO: send POST request to create new branch
-    })
+    const dropdownMenu = document.getElementById("branch-dropdown-content");
+    const branchDropdownButton = document.getElementById("branch-dropdown-button");
 
-    dropdown_button.addEventListener("click", async (event) => {
-        event.stopPropagation();
-        const dropdown_is_visible = dropdown_menu.classList.toggle('dropdown-hidden') === false;
-        if (dropdown_is_visible) {
-            try {
-                const response = await fetch(`/repos/${repo_owner}/${repo_name}/branches`);
-                const json = await response.json();
-                const branches = json.data.branches;
-                dropdown_menu.innerHTML = "";
+    const newBranchDropdownButton = document.getElementById("new-branch-dropdown-button");
+    const newBranchDropdownMenu = document.getElementById("new-branch-dropdown-content");
+    const createBranchButton = document.getElementById("create-branch-button");
+    const baseBranchSelector = document.getElementById("base-branch-selector");
 
-                branches.forEach(branch => {
-                    const item = document.createElement("a");
-                    item.textContent = branch;
-                    item.href = `/repos/${repo_owner}/${repo_name}/branch/${branch}`;
-                    item.classList.add("dropdown-item");
-                    
-                    dropdown_menu.appendChild(item);
-                });
-            } catch (err) {
-                console.error("Error fetching branches: ", err);
-            }
-        }
+    const repository_branches = [];
+    try {
+        const response = await fetch(`/repos/${repoOwner}/${repoName}/branches`);
+        const json = await response.json();
+        const branches = json.data.branches;
+        repository_branches.push(...branches);
+    } catch (err) {
+        console.error("Error fetching branches: ", err);
+    }
+
+    repository_branches.forEach(branch => {
+        const item = document.createElement("a");
+        item.textContent = branch;
+        item.href = `/repos/${repoOwner}/${repoName}/branch/${branch}`;
+        item.classList.add("dropdown-item");
+
+        dropdownMenu.appendChild(item);
     });
 
-    dropdown_menu.addEventListener("click", (event) => {
+    repository_branches.forEach(branch => {
+        const item = document.createElement("option");
+        item.textContent = branch;
+        item.classList.add("dropdown-item");
+
+        baseBranchSelector.appendChild(item);
+    });
+
+    branchDropdownButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        dropdownMenu.classList.toggle('dropdown-hidden');
+    });
+
+    dropdownMenu.addEventListener("click", (event) => {
         event.stopPropagation();
     })
+
+    newBranchDropdownButton.addEventListener("click", (event) => {
+        event.stopPropagation()
+        newBranchDropdownMenu.classList.toggle('dropdown-hidden');
+    });
 
     window.addEventListener("click", (event) => {
-        if (!dropdown_menu.classList.contains('dropdown-hidden')) {
-            dropdown_menu.classList.add('dropdown-hidden');
+        if (!dropdownMenu.classList.contains('dropdown-hidden')) {
+            dropdownMenu.classList.add('dropdown-hidden');
+        }
+
+        if (!baseBranchSelector.classList.contains('dropdown-hidden')) {
+            baseBranchSelector.classList.add('dropdown-hidden');
         }
     });
+
+    createBranchButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const newBranchName = document.getElementById("new-branch-name").value;
+        const baseBranch = document.getElementById("base-branch").value;
+
+        if (!newBranchName || !baseBranch) {
+            alert("Please enter a valid branch name and choose a base branch.");
+            return;
+        }
+
+        try {
+            const response = fetch(`/repos/${repoOwner}/${repoName}/branches`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    new_branch_name: newBranchName,
+                    base_branch_name: baseBranch,
+                    switch_head: false
+                }),
+            });
+            if (!response.ok) {
+                console.log("Error creating branch: ", response);
+            }
+        } catch (err) {
+            console.error("Error creating branch: ", err);
+        }
+    })
 });

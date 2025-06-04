@@ -5,17 +5,11 @@ use serde::{Deserialize, Serialize};
 use crate::models::{User, Repository};
 use std::convert::TryFrom;
 use error::AppError;
+use crate::request::auth::UserIdentifier;
 
 #[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
 pub struct InfoRefsQuery {
     pub service: String,
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct AuthorizationRequest {
-    pub user: User,
-    pub repository: Repository,
-    pub repo_action: RepoAction,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -33,6 +27,20 @@ impl From<TypedHeader<Authorization<Basic>>> for Credentials {
     }
 }
 
+#[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
+pub struct CreateBranchRequest {
+    pub new_branch_name: String,
+    pub base_branch_name: String,
+    pub switch_head: bool,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct AuthorizationRequest {
+    pub user: User,
+    pub repository: Repository,
+    pub repo_action: RepoAction,
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum RepoAction {
     View,
@@ -44,6 +52,7 @@ pub enum RepoAction {
     CreateMergeRequest,
     ApproveMergeRequest,
     ManageRepoSettings,
+    CreateBranch,
 }
 
 impl TryFrom<&str> for RepoAction {
