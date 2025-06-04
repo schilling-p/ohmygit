@@ -1,7 +1,7 @@
 use axum::extract::State;
 use axum::Json;
 use diesel::prelude::*;
-use log::debug;
+use tracing::debug;
 
 use crate::user::read::retrieve_user_from_db;
 use error::AppError;

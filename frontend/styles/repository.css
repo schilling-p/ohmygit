@@ -1,10 +1,9 @@
 body {
-    display: flex;
     flex-direction: column;
-    min-height: 100vh;
 }
 
 .container {
+    display: block;
     flex: 1;
     width: 90%;
     margin-top: 64px;
@@ -37,6 +36,118 @@ body {
     color: #0366d6;
 }
 
+.repo-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.branch-menu {
+    float: left;
+    display: flex;
+}
+
+.branch-menu-button {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background-color: #f6f8fa;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.branch-menu-button svg {
+    fill: currentColor;
+}
+
+.dropdown-hidden {
+    display: none;
+}
+
+#branch-dropdown-content {
+    margin-top: 44px;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-item {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background-color: #ddd;
+    cursor: pointer;
+}
+
+#new-branch-container {
+    display: block;
+    margin-left: 1rem;
+}
+
+#new-branch-dropdown-content {
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.new-branch-dropdown-element {
+    float: none;
+    padding: 12px 16px;
+    display: block;
+    text-align: left;
+}
+
+#base-branch-selector {
+    font-size: 16px;
+}
+
+#create-branch-button {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background-color: #f6f8fa;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    margin-left: 16px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.repo-description {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.commit-info {
+    font-size: 12px;
+    color: #586069;
+    align-content: center;
+}
+
+.commit-info .last-commit .commit-time {
+    margin-right: 8px;
+}
+
 .repo-actions .btn.primary {
     background-color: #2ea44f;
     color: white;
@@ -45,31 +156,6 @@ body {
     border: 1px solid rgba(27, 31, 35, 0.15);
     font-weight: 500;
     cursor: pointer;
-}
-
-.branch-selector {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.btn.branch {
-    padding: 5px 16px;
-    background-color: #fafbfc;
-    border: 1px solid #e1e4e8;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.commit-info {
-    font-size: 12px;
-    color: #586069;
-}
-
-.commit-info .last-commit {
-    margin-right: 8px;
 }
 
 .file-browser table {

@@ -1,7 +1,7 @@
 use serde::Serialize;
 use axum::{http::StatusCode, response::{IntoResponse, Response}, Json};
 use crate::response::organization::ListOrganizationsResponse;
-use crate::response::repository::{ListRepositoriesResponse, RepositoryOverview};
+use crate::response::repository::{ListRepositoriesResponse, RepositoryBranches, RepositoryOverview};
 use super::response::auth::{SignupResponse, LoginResponse};
 use super::response::health::HealthResponse;
 
@@ -18,7 +18,8 @@ pub enum ApiResponse {
     Health(HealthResponse),
     ListRepositoriesPerUser(ListRepositoriesResponse),
     Organizations(ListOrganizationsResponse),
-    RepositoryForUser(RepositoryOverview)
+    RepositoryForUser(RepositoryOverview),
+    RepositoryBranches(RepositoryBranches)
 }
 
 impl IntoResponse for ApiResponse {
@@ -29,7 +30,8 @@ impl IntoResponse for ApiResponse {
             ApiResponse::Signup(_) => {StatusCode::CREATED},
             ApiResponse::ListRepositoriesPerUser(_) => {StatusCode::OK},
             ApiResponse::Organizations(_) => {StatusCode::OK},
-            ApiResponse::RepositoryForUser(_) => {StatusCode::OK}
+            ApiResponse::RepositoryForUser(_) => {StatusCode::OK},
+            ApiResponse::RepositoryBranches(_) => {StatusCode::OK}
         };
 
         (status, Json(self)).into_response()

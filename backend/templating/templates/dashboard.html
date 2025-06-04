@@ -28,7 +28,7 @@
                 <ul>
                     {% for repo in repositories %}
                     <li class="repo-card">
-                        <a href="/repos/{{ repo.name | urlencode }}">{{ repo.name }}</a>
+                        <a href="/repos/{{ username | urlencode }}/{{ repo.name | urlencode }}">{{ repo.name }}</a>
                     </li>
                     {% endfor %}
                 </ul>
