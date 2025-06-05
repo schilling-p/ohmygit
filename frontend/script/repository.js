@@ -83,6 +83,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!newBranchName || !baseBranch) {
             alert("Please enter a valid branch name and choose a base branch.");
             return;
+        } else if (repository_branches.includes(newBranchName)) {
+            alert("Branch already exists in this repository.");
+            return;
         }
 
         try {
