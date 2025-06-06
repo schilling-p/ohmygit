@@ -39,6 +39,8 @@ body {
 }
 
 .navbar a {
+    display: flex;
+    align-items: center;
     float: left;
     font-size: 16px;
     color: white;
@@ -55,9 +57,12 @@ body {
 
 .dropdown {
     float: left;
+    align-items: center;
+    display: flex;
 }
 
 .dropdown .dropbtn {
+    align-items: center;
     font-size: 16px;
     min-width: 3rem;
     border: none;
@@ -66,7 +71,6 @@ body {
     padding: 14px 16px;
     background-color: inherit;
     font-family: inherit;
-    margin: 0;
 }
 
 /* Add a red background color to navbar links on hover */
@@ -76,6 +80,7 @@ body {
 
 .dropdown-content {
     display: none;
+    margin-top: 132px;
     position: absolute;
     background-color: #f9f9f9;
     min-width: 160px;
