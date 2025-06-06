@@ -1,14 +1,7 @@
 use askama::Template;
 use domain::models::{Repository, Organization};
 use domain::response::repository::RepositoryOverview;
-
-pub mod filters {
-    pub fn length<T>(value: &Vec<T>) -> Result<usize, askama::Error> {
-        Ok(value.len())
-    }
-}
-
-pub use filters::length;
+use serde::Serialize;
 
 #[derive(Template)]
 #[template(path = "dashboard.html")]
@@ -24,4 +17,11 @@ pub struct RepositoryTemplate {
     pub repository_name: String,
     pub username: String,
     pub overview: RepositoryOverview,
+}
+
+#[derive(Template, Serialize)]
+#[template(path = "create_repository.html")]
+pub struct CreateRepositoryTemplate {
+    pub username: String,
+    pub repositories: Vec<String>
 }

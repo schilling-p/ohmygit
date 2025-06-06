@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %} Create Repository {% endblock title %}
+{% block head %}
+{% call super() %}
+<script type="module" src="/script/create_repository.js" defer></script>
+<link rel="stylesheet" href="/styles/create_repository.css">
+{% endblock head %}
+{% block content %}
+<div class="container">
+    <form id="create-repository-form">
+        <h3>Create a new repository</h3>
+
+        <strong class="owner-info">Owner: {{ username }}</strong>
+
+        <div class="form-group">
+            <label for="repository-name">Repository name</label>
+            <input type="text" id="repository-name" name="repository_name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3" placeholder="A short description of your repository..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <fieldset class="visibility-options">
+                <legend>Visibility</legend>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="is_private" value="false" checked>
+                        <span class="radio-text">
+                            <strong>Public</strong>
+                            <small>Anyone can see this repository</small>
+                        </span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="is_private" value="true">
+                        <span class="radio-text">
+                            <strong>Private</strong>
+                            <small>Only you can see this repository</small>
+                        </span>
+                    </label>
+                </div>
+            </fieldset>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Create repository</button>
+        </div>
+    </form>
+</div>
+<script>const repositories = {{repositories | json | safe}};</script>
+{% endblock content %}
