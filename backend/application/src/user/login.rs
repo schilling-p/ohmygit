@@ -5,7 +5,7 @@ use super::read::retrieve_user_from_db;
 use shared::crypto::verify_password;
 use error::AppError;
 use tracing::debug;
-use tower_sessions::{Session};
+use tower_sessions::Session;
 
 use domain::request::auth::{LoginRequest, UserIdentifier};
 use domain::response::auth::LoginResponse;
@@ -14,7 +14,7 @@ use domain::models::User;
 use infrastructure::diesel::DbPool;
 
 #[debug_handler]
-pub async fn user_web_login_handler(session: Session, pool: State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
+pub async fn user_web_login_handler(session: Session, State(pool): State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
 
     match login_user(&pool, login_request).await {
         Ok(user) => {
