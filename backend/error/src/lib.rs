@@ -6,6 +6,7 @@ use git2::Error as Git2Error;
 use askama::Error as RenderError;
 use axum::body::Body;
 use tower_sessions::session::Error as SessionError;
+use std::io::Error as IoError;
 
 #[derive(Debug)]
 pub enum AppError {
@@ -24,6 +25,13 @@ pub enum AppError {
     GitUnauthorized(String),
     BadRequest(String),
     InternalServerError(String),
+    IoError(IoError)
+}
+
+impl From<IoError> for AppError {
+    fn from(err: IoError) -> Self {
+        AppError::InternalServerError(format!("Filesystem Error: {}", err))
+    }
 }
 
 impl From<SessionError> for AppError {
@@ -140,6 +148,10 @@ impl IntoResponse for AppError {
             }
             AppError::InternalServerError(msg) => {
                 let body = Json(json!({"error": msg}));
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            }
+            AppError::IoError(err) => {
+                let body = Json(json!({"error": err.to_string()}));
                 (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
             }
         }

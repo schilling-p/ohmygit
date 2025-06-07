@@ -13,7 +13,6 @@ use infrastructure::diesel::DbPool;
 use crate::repository::read::find_repository_by_name;
 use crate::repository::auth::authenticate_and_authorize_user;
 use crate::repository::git::constants::{GIT_REPO_PATH, GIT_PUSH_PACK};
-
 use crate::repository::git::run::run_git_pack;
 use crate::repository::git::format::build_git_pack_response;
 
