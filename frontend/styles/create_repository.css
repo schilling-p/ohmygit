@@ -4,12 +4,7 @@
     padding: 20px;
 }
 
-#create-repository-form {
-    display: block;
-}
-
 #create-repository-form h3 {
-    display: block;
     margin: 0 0 30px 0;
     font-size: 24px;
     font-weight: 600;
@@ -28,7 +23,6 @@
 }
 
 .form-group {
-    display: block;
     margin-bottom: 20px;
 }
 
@@ -65,7 +59,6 @@
 }
 
 .visibility-options {
-    display: block;
     border: 1px solid #d1d9e0;
     border-radius: 6px;
     padding: 16px;
@@ -78,10 +71,6 @@
     font-weight: 600;
     color: #1f2328;
     font-size: 14px;
-}
-
-.radio-group {
-    display: block;
 }
 
 .radio-label {
