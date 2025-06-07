@@ -82,7 +82,7 @@ dependencies = [
  "domain",
  "error",
  "infrastructure",
- "log",
+ "regex",
  "shared",
  "templating",
  "tokio",
