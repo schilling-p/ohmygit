@@ -8,8 +8,10 @@ infrastructure = { path = "../infrastructure" }
 application = { path = "../application" }
 domain = {path = "../domain"}
 shared = { path = "../shared" }
+error = { path = "../error" }
 
 axum = "0.8.4"
+axum-macros = "0.5.0"
 tokio = { version = "1.45.0", features = ["full"] }
 anyhow = "1.0.97"
 tower-http = { version = "0.6.2", features = ["catch-panic", "cors", "trace"] }

@@ -1,3 +1,3 @@
 pub mod connection;
-mod user_store;
+pub mod user_store;
 

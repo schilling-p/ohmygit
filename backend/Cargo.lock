@@ -54,8 +54,10 @@ dependencies = [
  "anyhow",
  "application",
  "axum",
+ "axum-macros",
  "deadpool-diesel",
  "domain",
+ "error",
  "http",
  "infrastructure",
  "shared",
@@ -1067,10 +1069,12 @@ dependencies = [
 name = "infrastructure"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "chrono",
  "deadpool-diesel",
  "diesel",
  "diesel_migrations",
+ "domain",
  "dotenvy",
  "error",
  "git2",

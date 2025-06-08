@@ -15,6 +15,7 @@ use shared::graceful::shutdown_signal;
 use shared::state::AppState;
 
 mod routes;
+mod handlers;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()>{

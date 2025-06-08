@@ -15,15 +15,8 @@ use shared::state::AppState;
 pub async fn list_users(
     State(app_state): State<AppState>,
 ) -> Result<Json<Vec<User>>, AppError> {
-    use domain::schema::users::dsl::*;
-    let pool = &app_state.db;
-    let conn = pool.get().await?;
-    let res = conn
-        .interact(|conn| users.select(User::as_select()).load::<User>(conn))
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.to_string()))?
-        .map_err(AppError::from)?;
-    Ok(Json(res))
+    // TODO: use the list_users from the DieselUserStore from AppState
+    !unimplemented!()
 }
 
 #[tracing::instrument(skip(pool))]
