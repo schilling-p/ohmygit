@@ -48,7 +48,7 @@ pub async fn create_repository_branch(session: Session, State(pool): State<DbPoo
     git_repo.create_branch(&create_branch_request.new_branch_name, &create_branch_request.base_branch_name, create_branch_request.switch_head)?;
     debug!("Branch created successfully");
 
-    //write_branch_to_database(&pool, &create_branch_request.new_branch_name).await?;
+    //TODO: write_branch_to_database(&pool, &create_branch_request.new_branch_name).await?;
 
     let recently_authorized_key = format!("{}:{}", &username, &repo_name);
     session.insert("recently_authorized_repo", recently_authorized_key).await?;

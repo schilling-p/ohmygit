@@ -18,15 +18,6 @@ pub struct Credentials {
     pub password: String,
 }
 
-impl From<TypedHeader<Authorization<Basic>>> for Credentials {
-    fn from(auth: TypedHeader<Authorization<Basic>>) -> Self {
-        Credentials {
-            username: auth.username().to_string(),
-            password: auth.password().to_string(),
-        }
-    }
-}
-
 #[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
 pub struct CreateBranchRequest {
     pub new_branch_name: String,
@@ -53,6 +44,22 @@ pub enum RepoAction {
     ApproveMergeRequest,
     ManageRepoSettings,
     CreateBranch,
+}
+
+#[derive(Deserialize, Debug, PartialEq, Clone)]
+pub struct CreateRepoRequest {
+    pub repository_name: String,
+    pub description: Option<String>,
+    pub is_public: bool,
+}
+
+impl From<TypedHeader<Authorization<Basic>>> for Credentials {
+    fn from(auth: TypedHeader<Authorization<Basic>>) -> Self {
+        Credentials {
+            username: auth.username().to_string(),
+            password: auth.password().to_string(),
+        }
+    }
 }
 
 impl TryFrom<&str> for RepoAction {

@@ -36,6 +36,7 @@ CREATE TABLE repositories (
                               owner_org_id uuid REFERENCES organizations(id),
                               name text DEFAULT 'repository name'::text NOT NULL,
                               is_public boolean DEFAULT true NOT NULL,
+                              description text DEFAULT 'repository description':: text,
                               created_at timestamp with time zone DEFAULT now() NOT NULL,
                               updated_at timestamp with time zone DEFAULT now() NOT NULL,
                               CONSTRAINT check_owner_or_org CHECK ((((owner_id IS NOT NULL) AND (owner_org_id IS NULL)) OR ((owner_id IS NULL) AND (owner_org_id IS NOT NULL))))

@@ -11,6 +11,11 @@ impl GitRepository {
         let repo: Repository = Repository::open(path)?;
         Ok(GitRepository { repo })
     }
+    
+    pub fn init_bare(path: &str) -> Result<(), AppError> {
+        let repo = Repository::init_bare(path)?;
+        Ok(())
+    }
 
     pub fn get_head_commit(&self) -> Result<Commit, AppError> {
         let head = self.repo.head()?;

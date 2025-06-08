@@ -82,7 +82,7 @@ dependencies = [
  "domain",
  "error",
  "infrastructure",
- "log",
+ "regex",
  "shared",
  "templating",
  "tokio",
@@ -1726,6 +1726,7 @@ version = "0.1.0"
 dependencies = [
  "askama",
  "domain",
+ "serde",
 ]
 
 [[package]]

@@ -4,9 +4,14 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f5f5f5;
     min-height: 100vh;
-    display: flex;
-    justify-content: center;
+    display: block;
     align-items: center;
+}
+
+.layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .page-title {
@@ -34,6 +39,8 @@ body {
 }
 
 .navbar a {
+    display: flex;
+    align-items: center;
     float: left;
     font-size: 16px;
     color: white;
@@ -50,9 +57,12 @@ body {
 
 .dropdown {
     float: left;
+    align-items: center;
+    display: flex;
 }
 
 .dropdown .dropbtn {
+    align-items: center;
     font-size: 16px;
     min-width: 3rem;
     border: none;
@@ -61,7 +71,6 @@ body {
     padding: 14px 16px;
     background-color: inherit;
     font-family: inherit;
-    margin: 0;
 }
 
 /* Add a red background color to navbar links on hover */
@@ -71,6 +80,7 @@ body {
 
 .dropdown-content {
     display: none;
+    margin-top: 132px;
     position: absolute;
     background-color: #f9f9f9;
     min-width: 160px;
@@ -110,16 +120,15 @@ body {
 }
 
 .footer {
+    margin-top: auto;
     min-height: 50px;
-    background-color: #f6f8fa;
+    background-color: #f4f6f8;
     padding: 2rem;
-    display: table-row;
-    width: 66.6666666667%
+    width: 100%;
 }
 
 .footer-content {
     max-width: 1200px;
-    margin: 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;

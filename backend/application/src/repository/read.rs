@@ -8,7 +8,6 @@ use domain::request::auth::{UserIdentifier};
 use domain::response::repository::{RepositoryOverview, RepositoryFileInformation, CommitInformation};
 use error::AppError;
 use infrastructure::diesel::DbPool;
-use infrastructure::git2;
 use infrastructure::git2::GitRepository;
 
 use crate::user::read::retrieve_user_from_db;

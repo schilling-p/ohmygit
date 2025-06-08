@@ -1,17 +1,18 @@
 use axum::response::{IntoResponse, Html};
-use templating::{RepositoryTemplate};
+use templating::{RepositoryTemplate, CreateRepositoryTemplate};
 use error::AppError;
 use askama::Template;
 use axum::extract::{Path, State};
 use axum_macros::debug_handler;
 use tower_sessions::Session;
 use crate::repository::read::get_repo_overview;
-use crate::repository::read::find_repository_by_name;
+use crate::repository::read::{find_repository_by_name, list_user_repositories};
 use crate::user::read::retrieve_user_from_db;
 use crate::repository::auth::authorize_repository_action;
 use domain::request::repository::{AuthorizationRequest, RepoAction};
 use infrastructure::diesel::DbPool;
 use tracing::debug;
+use domain::models::Repository;
 use domain::request::auth::UserIdentifier;
 
 #[debug_handler]
@@ -27,6 +28,28 @@ pub async fn repository_template_for_branch(State(pool): State<DbPool>, Path((us
     create_repository_view(pool, username, repository_name, branch_name, session).await
 }
 
+#[debug_handler]
+pub async fn create_repository_template(State(pool): State<DbPool>, session: Session) -> Result<impl IntoResponse, AppError> {
+    let user_email: Option<String> = session.get("user_email").await?;
+    let username: Option<String> = session.get("username").await?;
+    if let (Some(user_email), Some(username)) = (user_email, username) {
+        let repos: Vec<Repository> = list_user_repositories(&pool, &user_email).await?;
+        let mut repo_names = Vec::new();
+        for repo in repos.into_iter() {
+            repo_names.push(repo.name);
+        }
+        let template = CreateRepositoryTemplate {
+            username, 
+            repositories: repo_names,
+        };
+        
+        Ok(Html(template.render()?))
+        
+    } else {
+        Err(AppError::Unauthorized)
+    }
+}
+
 async fn create_repository_view(pool: DbPool, username: String, repository_name: String, branch_name: Option<String>, session: Session) -> Result<impl IntoResponse, AppError> {
     let Some(current_user) = session.get::<String>("username").await? else {
         return Err(AppError::Unauthorized);
@@ -40,6 +63,7 @@ async fn create_repository_view(pool: DbPool, username: String, repository_name:
     debug!("is_recently_authorized: {:?}", is_recently_authorized);
 
     let repository = find_repository_by_name(&pool, &repository_name).await?;
+    debug!("repository: {:?}", repository);
     if !repository.is_public && !is_recently_authorized {
         let repo_action = RepoAction::View;
         let user = retrieve_user_from_db(&pool, UserIdentifier::Username(current_user)).await?;
