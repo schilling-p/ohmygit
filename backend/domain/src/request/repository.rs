@@ -2,7 +2,8 @@ use axum_extra::{headers, typed_header::TypedHeader};
 use axum_extra::headers::authorization::Basic;
 use headers::Authorization;
 use serde::{Deserialize, Serialize};
-use crate::models::{User, Repository};
+use crate::user::model::User;
+use crate::repository::model::Repository;
 use std::convert::TryFrom;
 use error::AppError;
 

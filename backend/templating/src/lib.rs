@@ -1,5 +1,6 @@
 use askama::Template;
-use domain::models::{Repository, Organization};
+use domain::repository::model::Repository;
+use domain::organization::model::Organization;
 use domain::response::repository::RepositoryOverview;
 use serde::Serialize;
 

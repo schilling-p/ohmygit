@@ -3,7 +3,7 @@ use axum_macros::debug_handler;
 use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, OptionalExtension};
 use diesel::expression_methods::ExpressionMethods;
 use uuid::Uuid;
-use domain::models::{User};
+use domain::user::User;
 use domain::request::auth::UserIdentifier;
 use infrastructure::diesel::DbPool;
 use error::AppError;

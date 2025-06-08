@@ -560,6 +560,7 @@ dependencies = [
 name = "domain"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "axum",
  "axum-extra",
  "chrono",
@@ -1627,6 +1628,7 @@ version = "0.1.0"
 dependencies = [
  "argon2",
  "axum",
+ "domain",
  "error",
  "infrastructure",
  "password-hash",
