@@ -30,7 +30,7 @@ impl UserStore for DieselUserStore {
             .map_err(AppError::from)?;
         Ok(res)
     }
-    
+
     async fn retrieve_user_by_identifier(&self, user_identifier: UserIdentifier) -> Result<User, AppError> {
         use domain::schema::users::dsl::*;
         let conn = self.pool.get().await.map_err(AppError::from)?;
@@ -52,7 +52,7 @@ impl UserStore for DieselUserStore {
 
         Ok(user)
     }
-    
+
     async fn write_user_to_db(&self, new_user: NewUser) -> Result<User, AppError> {
         let conn = self.pool.get().await.map_err(AppError::from)?;
         let user = conn
