@@ -7,7 +7,7 @@ use regex::Regex;
 use std::sync::LazyLock;
 use std::path::PathBuf;
 use tokio::fs;
-
+use tracing::debug;
 use domain::request::auth::UserIdentifier;
 use crate::user::read::retrieve_user_from_db;
 use domain::request::repository::CreateRepoRequest;
@@ -23,6 +23,7 @@ pub async fn create_repository(State(pool): State<DbPool>, session: Session, Jso
     // init the bare repository - DONE
     // create a new struct for the database insertion
     // insert repository metadata into the database
+    debug!("Got request with: {:?}", create_repo_request);
 
     if !is_valid_repo_name(&create_repo_request.repository_name) {
         return Err(AppError::BadRequest("Invalid name for a repository".to_string()))
@@ -41,9 +42,9 @@ pub async fn create_repository(State(pool): State<DbPool>, session: Session, Jso
         if !fs::try_exists(&user_directory).await? {
             fs::create_dir_all(&user_directory).await?;
         }
-        
+
         GitRepository::init_bare(&repo_path)?;
-        
+
         Ok(Redirect::to("/dashboard"))
 
 

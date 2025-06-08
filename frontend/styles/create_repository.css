@@ -74,7 +74,7 @@
 }
 
 .radio-label {
-    display: block;
+    align-items: center;
     padding: 12px;
     margin-bottom: 8px;
     border: 1px solid #d1d9e0;
@@ -82,6 +82,10 @@
     cursor: pointer;
     background-color: #ffffff;
     transition: background-color 0.2s ease;
+}
+
+.radio-label input {
+    align-items: center;
 }
 
 .radio-label:hover {
