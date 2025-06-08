@@ -1,7 +1,7 @@
 use axum::extract::{Path, State};
 use axum::extract::Json;
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Redirect};
+use axum::response::{IntoResponse};
 use axum_macros::debug_handler;
 use tower_sessions::Session;
 use tracing::debug;
@@ -10,8 +10,8 @@ use domain::request::auth::UserIdentifier;
 use error::AppError;
 use domain::response::repository::RepositoryBranches;
 use domain::request::repository::{AuthorizationRequest, CreateBranchRequest, RepoAction};
-use infrastructure::diesel::DbPool;
 use infrastructure::git2::GitRepository;
+use shared::state::AppState;
 use crate::repository::auth::authorize_repository_action;
 use crate::repository::branch::create::write_branch_to_database;
 use crate::repository::read::find_repository_by_name;
@@ -27,11 +27,12 @@ pub async fn list_repository_branches(Path((username, repo_name)): Path<(String,
 }
 
 #[debug_handler]
-pub async fn create_repository_branch(session: Session, State(pool): State<DbPool>, Path((username, repo_name)): Path<(String, String)>, Json(create_branch_request): Json<CreateBranchRequest>) -> Result<impl IntoResponse, AppError> {
+pub async fn create_repository_branch(session: Session, State(app_state): State<AppState>, Path((username, repo_name)): Path<(String, String)>, Json(create_branch_request): Json<CreateBranchRequest>) -> Result<impl IntoResponse, AppError> {
     let Some(current_user) = session.get::<String>("username").await? else {
         return Err(AppError::Unauthorized);
     };
 
+    let pool = &app_state.db;
     let user = retrieve_user_from_db(&pool, UserIdentifier::Username(current_user)).await?;
     let repository = find_repository_by_name(&pool, &repo_name).await?;
     let repo_action = RepoAction::CreateBranch;

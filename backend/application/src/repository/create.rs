@@ -12,11 +12,11 @@ use domain::request::auth::UserIdentifier;
 use crate::user::read::retrieve_user_from_db;
 use domain::request::repository::CreateRepoRequest;
 use error::AppError;
-use infrastructure::diesel::DbPool;
 use infrastructure::git2::GitRepository;
+use shared::state::AppState;
 
 #[debug_handler]
-pub async fn create_repository(State(pool): State<DbPool>, session: Session, Json(create_repo_request): Json<CreateRepoRequest>) -> Result<impl IntoResponse, AppError> {
+pub async fn create_repository(State(app_state): State<AppState>, session: Session, Json(create_repo_request): Json<CreateRepoRequest>) -> Result<impl IntoResponse, AppError> {
     // ensure the repo does not already exist - DONE
     // build repo path - DONE
     // create a user folder in /repos if missing - DONE
@@ -29,6 +29,7 @@ pub async fn create_repository(State(pool): State<DbPool>, session: Session, Jso
         return Err(AppError::BadRequest("Invalid name for a repository".to_string()))
     }
 
+    let pool = &app_state.db;
     let username: Option<String> = session.get("username").await?;
     if let Some(username) = username {
         let user = retrieve_user_from_db(&pool, UserIdentifier::Username(username)).await?;

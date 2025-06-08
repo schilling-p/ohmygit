@@ -7,15 +7,16 @@ use error::AppError;
 use tracing::debug;
 use tower_sessions::Session;
 
-use domain::request::auth::{LoginRequest, UserIdentifier};
+use domain::request::auth::{LoginRequest};
 use domain::response::auth::LoginResponse;
 use domain::ApiResponse;
 use domain::models::User;
 use infrastructure::diesel::DbPool;
+use shared::state::AppState;
 
 #[debug_handler]
-pub async fn user_web_login_handler(session: Session, State(pool): State<DbPool>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
-
+pub async fn user_web_login_handler(session: Session, State(app_state): State<AppState>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
+    let pool = &app_state.db;
     match login_user(&pool, login_request).await {
         Ok(user) => {
             session.insert("username", user.username.clone()).await?;

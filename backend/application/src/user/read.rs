@@ -3,19 +3,20 @@ use axum_macros::debug_handler;
 use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, OptionalExtension};
 use diesel::expression_methods::ExpressionMethods;
 use uuid::Uuid;
-use domain::models::{User, UserRepositoryRoles};
+use domain::models::{User};
 use domain::request::auth::UserIdentifier;
-use domain::schema::organizations_members::user_id;
 use infrastructure::diesel::DbPool;
 use error::AppError;
+use shared::state::AppState;
 
 // TODO: remove for production
 // this is purely for testing purposes
 #[debug_handler]
 pub async fn list_users(
-    State(pool): State<deadpool_diesel::postgres::Pool>,
+    State(app_state): State<AppState>,
 ) -> Result<Json<Vec<User>>, AppError> {
     use domain::schema::users::dsl::*;
+    let pool = &app_state.db;
     let conn = pool.get().await?;
     let res = conn
         .interact(|conn| users.select(User::as_select()).load::<User>(conn))

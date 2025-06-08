@@ -1,4 +1,4 @@
-use axum::response::{IntoResponse, Html};
+use axum::response::{IntoResponse, Html, Response};
 use templating::{RepositoryTemplate, CreateRepositoryTemplate};
 use error::AppError;
 use askama::Template;
@@ -14,22 +14,25 @@ use infrastructure::diesel::DbPool;
 use tracing::debug;
 use domain::models::Repository;
 use domain::request::auth::UserIdentifier;
+use shared::state::AppState;
 
 #[debug_handler]
-pub async fn repository_template_default(State(pool): State<DbPool>, Path((username, repository_name)): Path<(String, String)>, session: Session) -> Result<impl IntoResponse, AppError> {
+pub async fn repository_template_default(State(app_state): State<AppState>, Path((username, repository_name)): Path<(String, String)>, session: Session) -> Result<Response, AppError> {
+    let pool = &app_state.db;
     let branch_name = None;
     create_repository_view(pool, username, repository_name, branch_name, session).await
 }
 
 #[debug_handler]
-pub async fn repository_template_for_branch(State(pool): State<DbPool>, Path((username, repository_name, branch_name)): Path<(String, String, String)>, session: Session) -> Result<impl IntoResponse, AppError> {
+pub async fn repository_template_for_branch(State(app_state): State<AppState>, Path((username, repository_name, branch_name)): Path<(String, String, String)>, session: Session) -> Result<Response, AppError> {
+    let pool = &app_state.db;
     let branch_name = Some(branch_name);
-    
     create_repository_view(pool, username, repository_name, branch_name, session).await
 }
 
 #[debug_handler]
-pub async fn create_repository_template(State(pool): State<DbPool>, session: Session) -> Result<impl IntoResponse, AppError> {
+pub async fn create_repository_template(State(app_state): State<AppState>, session: Session) -> Result<Response, AppError> {
+    let pool = &app_state.db;
     let user_email: Option<String> = session.get("user_email").await?;
     let username: Option<String> = session.get("username").await?;
     if let (Some(user_email), Some(username)) = (user_email, username) {
@@ -43,14 +46,14 @@ pub async fn create_repository_template(State(pool): State<DbPool>, session: Ses
             repositories: repo_names,
         };
         
-        Ok(Html(template.render()?))
+        Ok(Html(template.render()?).into_response())
         
     } else {
         Err(AppError::Unauthorized)
     }
 }
 
-async fn create_repository_view(pool: DbPool, username: String, repository_name: String, branch_name: Option<String>, session: Session) -> Result<impl IntoResponse, AppError> {
+async fn create_repository_view(pool: &DbPool, username: String, repository_name: String, branch_name: Option<String>, session: Session) -> Result<Response, AppError> {
     let Some(current_user) = session.get::<String>("username").await? else {
         return Err(AppError::Unauthorized);
     };
@@ -83,5 +86,5 @@ async fn create_repository_view(pool: DbPool, username: String, repository_name:
         overview: repo_overview,
     };
 
-    Ok(Html(template.render()?))
+    Ok(Html(template.render()?).into_response())
 }

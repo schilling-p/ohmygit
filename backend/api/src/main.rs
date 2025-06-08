@@ -10,8 +10,9 @@ use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
 use tower_http::cors::CorsLayer;
 use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 
-use infrastructure::diesel::{init_pool, run_migrations};
+use infrastructure::diesel::{init_pool, run_migrations, DbPool};
 use shared::graceful::shutdown_signal;
+use shared::state::AppState;
 
 mod routes;
 
@@ -21,6 +22,7 @@ async fn main() -> anyhow::Result<()>{
     // TODO: handle the error case better than with unwrap()
     run_migrations().unwrap();
     let pool = init_pool();
+    let app_state = AppState {db: pool};
 
     // TODO: remove or find better way for production than the current permissive CorsLayer, there is an example in the axum GH repo
     let session_store = MemoryStore::default();
@@ -33,7 +35,7 @@ async fn main() -> anyhow::Result<()>{
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let app = routes::create_routes(pool)
+    let app = routes::create_routes(app_state)
         .layer(tower_http::catch_panic::CatchPanicLayer::new())
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http()

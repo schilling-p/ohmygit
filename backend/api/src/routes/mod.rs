@@ -4,12 +4,12 @@ mod repository;
 mod templates;
 
 use axum::Router;
-use infrastructure::diesel::DbPool;
+use shared::state::AppState;
 
-pub fn create_routes(pool: DbPool) -> Router {
+pub fn create_routes(app_state: AppState) -> Router {
     Router::new()
         .merge(health::routes())
-        .merge(user::routes(pool.clone()))
-        .merge(repository::routes(pool.clone()))
-        .merge(templates::routes(pool))
+        .merge(user::routes(app_state.clone()))
+        .merge(repository::routes(app_state.clone()))
+        .merge(templates::routes(app_state.clone()))
 }

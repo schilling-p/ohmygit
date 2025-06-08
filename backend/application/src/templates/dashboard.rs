@@ -5,15 +5,16 @@ use error::AppError;
 use askama::Template;
 use axum::extract::{State};
 use tower_sessions::Session;
-use infrastructure::diesel::DbPool;
+use shared::state::AppState;
 use crate::repository::read::list_user_repositories;
 use crate::organizations::read::list_user_organizations;
 
 #[debug_handler]
-pub async fn dashboard_template(session: Session, State(pool): State<DbPool> ) -> Result< impl IntoResponse, AppError> {
+pub async fn dashboard_template(session: Session, State(app_state): State<AppState> ) -> Result< impl IntoResponse, AppError> {
+    let pool = &app_state.db;
     let user_email: Option<String> = session.get("user_email").await?;
     let username: Option<String> = session.get("username").await?;
-
+    
     if let (Some(user_email), Some(username)) = (user_email, username) {
         let template = DashboardTemplate {
             username,

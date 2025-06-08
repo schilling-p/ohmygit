@@ -11,12 +11,14 @@ use domain::schema::users;
 use domain::response::auth::SignupResponse;
 use domain::request::auth::UserIdentifier;
 use shared::crypto::hash_password;
+use shared::state::AppState;
 
 
-#[tracing::instrument(skip(pool))]
-pub async fn create_user(State(pool): State<deadpool_diesel::postgres::Pool>, Json(mut new_user): Json<NewUser>) -> Result<ApiResponse, AppError> {
+#[tracing::instrument(skip(app_state))]
+pub async fn create_user(State(app_state): State<AppState>, Json(mut new_user): Json<NewUser>) -> Result<ApiResponse, AppError> {
     debug!("new_user: {:?}", new_user);
     // TODO: optimization of the new_user.email.clone()
+    let pool = &app_state.db;
     match retrieve_user_from_db(&pool, UserIdentifier::Email(new_user.email.clone())).await {
         Ok(_) => return Err(AppError::EmailAlreadyExists),
         Err(AppError::NotFound(_)) => {},

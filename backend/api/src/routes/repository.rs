@@ -7,9 +7,9 @@ use application::repository::git::clone::send_user_repository;
 use application::repository::branch::handler::list_repository_branches;
 use application::repository::branch::handler::create_repository_branch;
 use application::repository::create::create_repository;
-use infrastructure::diesel::DbPool;
+use shared::state::AppState;
 
-pub fn routes(pool: DbPool) -> Router {
+pub fn routes(app_state: AppState) -> Router {
     Router::new()
         .route("/{user}/{repo_name.git}/info/refs", get(handle_info_refs))
         .route("/{user}/{repo_name.git}/git-upload-pack", post(send_user_repository))
@@ -17,5 +17,5 @@ pub fn routes(pool: DbPool) -> Router {
         .route("/repos/{user}/{repo_name}/branches", get(list_repository_branches))
         .route("/repos/{user}/{repo_name}/branches", post(create_repository_branch))
         .route("/repos/create", post(create_repository))
-        .with_state(pool)
+        .with_state(app_state)
 }

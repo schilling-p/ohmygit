@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 error = { path = "../error" }
+infrastructure = { path = "../infrastructure" }
 
 tokio = { version = "1.44.1", features = ["signal"] }
 argon2 = "0.5.3"

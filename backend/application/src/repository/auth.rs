@@ -13,7 +13,7 @@ use domain::request::auth::{LoginRequest, UserIdentifier};
 use crate::repository::read::find_repository_by_name;
 use crate::user::login::login_user;
 
-pub async fn authenticate_and_authorize_user(pool: &State<DbPool>, auth_header: TypedHeader<Authorization<Basic>>, repository: Repository, repo_action: RepoAction) -> Result<(), AppError> {
+pub async fn authenticate_and_authorize_user(pool: &DbPool, auth_header: TypedHeader<Authorization<Basic>>, repository: Repository, repo_action: RepoAction) -> Result<(), AppError> {
     let credentials = Credentials::from(auth_header);
     let login_request = LoginRequest {
         identifier: UserIdentifier::Username(credentials.username),

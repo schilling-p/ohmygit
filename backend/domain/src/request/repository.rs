@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 use crate::models::{User, Repository};
 use std::convert::TryFrom;
 use error::AppError;
-use crate::request::auth::UserIdentifier;
 
 #[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
 pub struct InfoRefsQuery {
