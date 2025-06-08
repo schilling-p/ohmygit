@@ -32,7 +32,7 @@ pub async fn create_repository(State(pool): State<DbPool>, session: Session, Jso
     let username: Option<String> = session.get("username").await?;
     if let Some(username) = username {
         let user = retrieve_user_from_db(&pool, UserIdentifier::Username(username)).await?;
-        let repo_path = format!("/repos/{}/{}", &user.username, &create_repo_request.repository_name);
+        let repo_path = format!("/repos/{}/{}.git", &user.username, &create_repo_request.repository_name);
         match GitRepository::open(&repo_path) {
             Ok(_) => return Err(AppError::BadRequest("Repository already exists".to_string())),
             Err(_) => {},
@@ -45,7 +45,8 @@ pub async fn create_repository(State(pool): State<DbPool>, session: Session, Jso
 
         GitRepository::init_bare(&repo_path)?;
 
-        Ok(Redirect::to("/dashboard"))
+        let redirect_url = format!("/repos/{}/{}", &user.username, &create_repo_request.repository_name);
+        Ok(Redirect::to(&redirect_url))
 
 
     } else {

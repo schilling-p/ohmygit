@@ -50,7 +50,7 @@ pub enum RepoAction {
 pub struct CreateRepoRequest {
     pub repository_name: String,
     pub description: Option<String>,
-    pub is_private: bool,
+    pub is_public: bool,
 }
 
 impl From<TypedHeader<Authorization<Basic>>> for Credentials {

@@ -47,3 +47,4 @@ USER appuser
 EXPOSE 3001
 
 CMD ["/bin/backend"]
+CMD ["cd .."]

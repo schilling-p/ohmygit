@@ -10,10 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const isPublic = document.querySelector('input[name="is-public"]:checked').value === "true";
 
         const createRepositoryRequest = {
-            repositoryName,
+            repository_name : repositoryName,
             description: repositoryDescription || null,
-            isPublic,
-        }
+            is_public: isPublic,
+        };
 
         try {
             const response = await fetch("/repos/create", {
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(createRepositoryRequest),
-            });
+            })
             if (response.ok) {
                 console.log("Repository created successfully.");
             }

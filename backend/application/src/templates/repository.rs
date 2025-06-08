@@ -63,6 +63,7 @@ async fn create_repository_view(pool: DbPool, username: String, repository_name:
     debug!("is_recently_authorized: {:?}", is_recently_authorized);
 
     let repository = find_repository_by_name(&pool, &repository_name).await?;
+    debug!("repository: {:?}", repository);
     if !repository.is_public && !is_recently_authorized {
         let repo_action = RepoAction::View;
         let user = retrieve_user_from_db(&pool, UserIdentifier::Username(current_user)).await?;
