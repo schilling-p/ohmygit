@@ -1,19 +1,8 @@
-use std::sync::Arc;
-use axum::extract::State;
-use axum::http::StatusCode;
-use axum_macros::debug_handler;
-use axum::Json;
-use axum::response::Response;
-use super::read::retrieve_user_from_db;
 use shared::crypto::verify_password;
 use error::AppError;
-use tracing::debug;
-use tower_sessions::Session;
 
 use domain::request::auth::{LoginRequest};
-use domain::response::auth::LoginResponse;
-use domain::ApiResponse;
-use domain::user::{User, NewUser};
+use domain::user::User;
 use super::service::UserService;
 
 impl UserService {

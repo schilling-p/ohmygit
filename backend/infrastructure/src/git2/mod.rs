@@ -1,5 +1,6 @@
 use git2::{Repository, Error, Commit, Sort, BranchType, Oid};
 use chrono::{DateTime};
+use domain::response::repository::{CommitInformation, RepositoryFileInformation, RepositoryOverview};
 use error::AppError;
 
 pub struct GitRepository {
@@ -95,5 +96,47 @@ impl GitRepository {
         }
 
         Ok(())
+    }
+
+    pub fn get_repo_overview(&self, branch_name: Option<&str>) -> Result<RepositoryOverview, AppError> {
+        let repo_name = self.get_repository_name()?;
+        let head_commit = if let Some(branch_name) = branch_name {
+            self.get_commit_from_branch(branch_name)?
+        } else {
+            self.get_head_commit()?
+        };
+
+        let tree = head_commit.tree()?;
+        let head_commit_oid = head_commit.id();
+
+        let mut files: Vec<RepositoryFileInformation> = Vec::new();
+        for entry in tree.iter() {
+            let file_name = entry.name().unwrap_or("").to_string();
+            let (message, timestamp) = self.get_last_commit_from_path(&file_name, head_commit_oid)?;
+            files.push(RepositoryFileInformation {
+                file_name,
+                last_commit_message: message,
+                last_commit_time: timestamp,
+            });
+        }
+
+        // TODO: insufficient error handling with unwrap()
+        let head_commit_time = DateTime::from_timestamp(head_commit.time().seconds(), 0).unwrap();
+        let commit_information = CommitInformation {
+            commit_message: head_commit.message().unwrap_or("no commit yet").to_string(),
+            commit_time: head_commit_time.to_string(),
+        };
+
+        let head_branch_name = match branch_name {
+            Some(name) => name.to_owned(),
+            None => self.get_branch_name_from_head()?,
+        };
+
+        Ok(RepositoryOverview {
+            head_branch_name,
+            repository_name: repo_name,
+            latest_commit: commit_information,
+            files,
+        })
     }
 }

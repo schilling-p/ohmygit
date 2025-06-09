@@ -1,4 +1,4 @@
-use domain::request::auth::{LoginRequest, UserIdentifier};
+use domain::request::auth::UserIdentifier;
 use domain::user::{NewUser, User};
 use error::AppError;
 use shared::crypto::{hash_password};
@@ -12,10 +12,10 @@ impl UserService {
             Err(AppError::NotFound(_)) => {},
             Err(e) => return Err{ 0: e },
         }
-        
+
         new_user.hashed_pw = hash_password(&new_user.hashed_pw)?;
         let user = self.store.write_user_to_db(new_user).await?;
         Ok(user)
-        
+
     }
 }

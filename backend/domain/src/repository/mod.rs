@@ -1,2 +1,2 @@
 pub mod model;
-mod store;
+pub mod store;

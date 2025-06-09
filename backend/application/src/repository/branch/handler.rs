@@ -17,14 +17,7 @@ use crate::repository::branch::create::write_branch_to_database;
 use crate::repository::read::find_repository_by_name;
 use crate::user::read::retrieve_user_from_db;
 
-#[debug_handler]
-pub async fn list_repository_branches(Path((username, repo_name)): Path<(String, String)>) -> Result<ApiResponse, AppError> {
-    // TODO: figure out why this does not check the session, does no auth at all
-    let repo_path = format!("/repos/{}/{}.git", username, repo_name);
-    let git_repo = GitRepository::open(&repo_path)?;
-    let branches = RepositoryBranches {branches: git_repo.list_local_branches()?};
-    Ok(ApiResponse::RepositoryBranches(branches))
-}
+
 
 #[debug_handler]
 pub async fn create_repository_branch(session: Session, State(app_state): State<AppState>, Path((username, repo_name)): Path<(String, String)>, Json(create_branch_request): Json<CreateBranchRequest>) -> Result<impl IntoResponse, AppError> {

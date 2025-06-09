@@ -22,12 +22,12 @@ INSERT INTO users (id, username, email, hashed_pw, created_at, updated_at) VALUE
 -- Data for Name: repositories; Type: TABLE DATA; Owner: admin
 --
 
-INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, created_at, updated_at) VALUES ('58b187aa-1206-4777-ae99-9e3d2cd4ad8e', 'c8bf561e-5d0e-4baa-ad59-734debf37bb3', NULL, 'rust-learning', false, '2025-04-02 10:11:00.572093+00', '2025-04-02 10:11:00.572093+00');
-INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, created_at, updated_at) VALUES ('c306c37c-892e-4761-8af2-073b26374ca5', 'c8bf561e-5d0e-4baa-ad59-734debf37bb3', NULL, 'ohmygit', true, '2025-04-02 10:15:09.717645+00', '2025-04-02 10:15:09.717645+00');
-INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, created_at, updated_at) VALUES ('6cfc63fd-7140-40d4-84c8-a686c43aa159', '7d6e9871-639b-472a-b25b-df6b10178f71', NULL, 'beauty_salon', true, '2025-04-02 10:15:09.717645+00', '2025-04-02 10:15:09.717645+00');
-INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, created_at, updated_at) VALUES ('f7c33199-ea61-420d-b66c-7256e3b1e89e', '19530df9-661d-4377-956b-a64cd0fbf18d', NULL, 'thomas_website', false, '2025-04-02 10:29:07.008085+00', '2025-04-02 10:29:07.008085+00');
-INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, created_at, updated_at) VALUES ('9cc6774c-b5d6-485e-892d-b862318596a8', '81d7d778-c455-49a5-abe1-3703deb51ed4', NULL, 'portfolio manager', true, '2025-04-02 12:45:21.783157+00', '2025-04-02 12:45:21.783157+00');
-INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, created_at, updated_at) VALUES ('2d0b5088-4662-4890-9695-9cd1f66702a4', NULL, '6ee92e9d-466c-40a4-ab06-15a8d1c03fd9', 'linux kernel', true, '2025-04-02 12:45:57.119733+00', '2025-04-02 12:45:57.119733+00');
+INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, description, created_at, updated_at) VALUES ('58b187aa-1206-4777-ae99-9e3d2cd4ad8e', 'c8bf561e-5d0e-4baa-ad59-734debf37bb3', NULL, 'rust-learning', false, 'a repository to learn the Rust programming language','2025-04-02 10:11:00.572093+00', '2025-04-02 10:11:00.572093+00');
+INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, description, created_at, updated_at) VALUES ('c306c37c-892e-4761-8af2-073b26374ca5', 'c8bf561e-5d0e-4baa-ad59-734debf37bb3', NULL, 'ohmygit', true,'a self hosted git service' , '2025-04-02 10:15:09.717645+00', '2025-04-02 10:15:09.717645+00');
+INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, description, created_at, updated_at) VALUES ('6cfc63fd-7140-40d4-84c8-a686c43aa159', '7d6e9871-639b-472a-b25b-df6b10178f71', NULL, 'beauty_salon', true,'Tillis beauty salon' ,'2025-04-02 10:15:09.717645+00', '2025-04-02 10:15:09.717645+00');
+INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, description, created_at, updated_at) VALUES ('f7c33199-ea61-420d-b66c-7256e3b1e89e', '19530df9-661d-4377-956b-a64cd0fbf18d', NULL, 'thomas_website', false,'The website of Thomas' , '2025-04-02 10:29:07.008085+00', '2025-04-02 10:29:07.008085+00');
+INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, description, created_at, updated_at) VALUES ('9cc6774c-b5d6-485e-892d-b862318596a8', '81d7d778-c455-49a5-abe1-3703deb51ed4', NULL, 'portfolio manager', true,'Wessels Capstone project' , '2025-04-02 12:45:21.783157+00', '2025-04-02 12:45:21.783157+00');
+INSERT INTO repositories (id, owner_id, owner_org_id, name, is_public, description, created_at, updated_at) VALUES ('2d0b5088-4662-4890-9695-9cd1f66702a4', NULL, '6ee92e9d-466c-40a4-ab06-15a8d1c03fd9', 'linux kernel', true,'Its the linux kernel' ,'2025-04-02 12:45:57.119733+00', '2025-04-02 12:45:57.119733+00');
 
 
 --

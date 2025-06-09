@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
-use diesel::{Associations, Identifiable, QueryId, Queryable, QueryableByName, Selectable};
-use serde::Serialize;
+use diesel::{Associations, Identifiable, Insertable, QueryId, Queryable, QueryableByName, Selectable};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::schema::repositories;
 use crate::user::model::User;
@@ -14,6 +14,16 @@ pub struct Repository {
     pub owner_org_id: Option<Uuid>,
     pub name: String,
     pub is_public: bool,
+    pub description: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Deserialize, Insertable, Debug, PartialEq, Clone)]
+#[diesel(table_name = repositories)]
+pub struct NewUserRepository {
+    pub owner_id: Uuid,
+    pub name: String,
+    pub is_public: bool,
+    pub description: Option<String>,
 }

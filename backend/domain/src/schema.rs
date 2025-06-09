@@ -1,4 +1,4 @@
-// @generated automatically by Diesel CLI.
+// @generated automatically by Diesel CLI. Then later adjusted manually.
 
 diesel::table! {
     branches (id) {
@@ -78,6 +78,7 @@ diesel::table! {
         owner_org_id -> Nullable<Uuid>,
         name -> Text,
         is_public -> Bool,
+        description -> Nullable<Text>,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
     }

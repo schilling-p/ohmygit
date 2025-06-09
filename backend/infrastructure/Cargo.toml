@@ -14,3 +14,4 @@ dotenvy = "0.15.7"
 git2 = "0.20.2"
 chrono = { version = "0.4.40", features = ["serde"] }
 async-trait = "0.1.88"
+uuid = { version = "1.16.0", features = ["serde"] }
