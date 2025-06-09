@@ -7,8 +7,8 @@ edition = "2024"
 infrastructure = { path = "../infrastructure" }
 application = { path = "../application" }
 domain = {path = "../domain"}
-shared = { path = "../shared" }
 error = { path = "../error" }
+state = { path = "../state" }
 
 axum = "0.8.4"
 axum-macros = "0.5.0"

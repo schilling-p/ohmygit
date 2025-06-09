@@ -13,47 +13,13 @@ use tower_sessions::Session;
 use domain::request::auth::{LoginRequest};
 use domain::response::auth::LoginResponse;
 use domain::ApiResponse;
-use domain::user::User;
-use domain::user::UserStore;
-use shared::state::AppState;
-
-pub struct UserService {
-    pub store: Arc<dyn UserStore>
-}
+use domain::user::{User, NewUser};
+use super::service::UserService;
 
 impl UserService {
-    pub async fn login(&self, login_request: LoginRequest) -> Result<User, AppError> {
+    pub async fn user_login(&self, login_request: LoginRequest) -> Result<User, AppError> {
         let user = self.store.retrieve_user_by_identifier(login_request.identifier).await?;
         verify_password(&login_request.password, &user.hashed_pw)?;
         Ok(user)
-    }
-}
-
-#[debug_handler]
-pub async fn user_web_login_handler(session: Session, State(app_state): State<AppState>, Json(login_request): Json<LoginRequest>) -> Result<ApiResponse, AppError> {
-    let pool = &app_state.db;
-    match login_user(&pool, login_request).await {
-        Ok(user) => {
-            session.insert("username", user.username.clone()).await?;
-            session.insert("user_email", user.email.clone()).await?;
-
-            Ok(ApiResponse::Login(LoginResponse {
-                message: "login_successful",
-                // TODO: remove for production, is not needed anymore
-                user_email: user.email.clone(),
-                username: user.username.clone(),
-            }))
-        }
-        Err(e) => Err(e),
-    }
-}
-
-pub async fn login_user(pool: &DbPool, login_request: LoginRequest) -> Result<User, AppError> {
-    debug!("login_user: {:?}", login_request);
-    let user = retrieve_user_from_db(&pool, login_request.identifier).await?;
-    debug!("found user: {:?}", user.username);
-    match verify_password(&login_request.password, &user.hashed_pw) {
-        Ok(_) => Ok(user),
-        Err(_) => Err(AppError::Unauthorized),
     }
 }

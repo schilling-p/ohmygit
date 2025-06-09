@@ -12,3 +12,12 @@ pub enum UserIdentifier {
     Email(String),
     Username(String),
 }
+
+impl UserIdentifier {
+    pub fn extract(self) -> String {
+        match self {
+            UserIdentifier::Email(email) => email,
+            UserIdentifier::Username(username) => username,
+        }
+    }   
+}

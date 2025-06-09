@@ -9,39 +9,6 @@ use infrastructure::diesel::DbPool;
 use error::AppError;
 use shared::state::AppState;
 
-// TODO: remove for production
-// this is purely for testing purposes
-#[debug_handler]
-pub async fn list_users(
-    State(app_state): State<AppState>,
-) -> Result<Json<Vec<User>>, AppError> {
-    // TODO: use the list_users from the DieselUserStore from AppState
-    !unimplemented!()
-}
-
-#[tracing::instrument(skip(pool))]
-pub async fn retrieve_user_from_db(pool: &DbPool, identifier: UserIdentifier) -> Result<User, AppError> {
-    use domain::schema::users::dsl::*;
-    let conn = pool.get().await.map_err(AppError::from)?;
-    let id_string = match identifier.clone() {
-        UserIdentifier::Email(s) => s,
-        UserIdentifier::Username(s) => s,
-    };
-
-    let user: User = conn
-        .interact(move |conn| {
-            match identifier {
-                UserIdentifier::Email(_) => users.filter(email.eq(&id_string)).select(User::as_select()).first::<User>(conn),
-                UserIdentifier::Username(_) => users.filter(username.eq(&id_string)).select(User::as_select()).first::<User>(conn),
-            }
-        })
-        .await
-        .map_err(|e| AppError::UnexpectedError(e.to_string()))?
-        .map_err(AppError::from)?;
-
-    Ok(user)
-}
-
 #[tracing::instrument(skip(pool))]
 pub async fn get_user_role_for_repository(pool: &DbPool, id_user: Uuid, repo_id: Uuid) -> Result<Option<String>, AppError> {
     use domain::schema::user_repository_roles::dsl::*;
