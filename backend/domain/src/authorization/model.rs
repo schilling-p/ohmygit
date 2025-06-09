@@ -35,8 +35,9 @@ pub struct Credentials {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct AuthorizationRequest {
-    pub user: User,
-    pub repository: Repository,
+    pub user_id: Uuid,
+    pub owner_id: Uuid,
+    pub repository_id: Uuid,
     pub repo_action: RepoAction,
 }
 

@@ -46,7 +46,7 @@ pub async fn create_repository(State(app_state): State<AppState>, session: Sessi
     if let Some(username) = username {
         let user = app_state.stores.users.retrieve_user_by_identifier(UserIdentifier::Username(username.clone())).await?;
         let repo_path = format!("/repos/{}/{}.git", &user.username, &create_repo_request.repository_name);
-        
+
         match GitRepository::open(&repo_path) {
             Ok(_) => return Err(AppError::BadRequest("Repository already exists".to_string())),
             Err(_) => {},
@@ -58,7 +58,7 @@ pub async fn create_repository(State(app_state): State<AppState>, session: Sessi
         }
 
         GitRepository::init_bare(&repo_path)?;
-        
+
         app_state.services.repo.create_new_user_repository(username, create_repo_request).await?;
 
         let redirect_url = format!("/repos/{}/{}", &user.username, &create_repo_request.repository_name);
@@ -96,7 +96,7 @@ pub async fn handle_info_refs(
         let credentials = Credentials::from(&auth_header);
         let action = RepoAction::try_from(query.service.as_str())?;
         app_state.services.auth.authenticate_and_authorize_user(credentials, repo, action).await?;
-        
+
 
         let output = run_git_advertise_refs(&query.service, repo_path).await?;
         let formatted_output = format_git_advertisement(&query.service, &output);
@@ -142,14 +142,15 @@ pub async fn create_repository_branch(session: Session, State(app_state): State<
     let Some(current_user) = session.get::<String>("username").await? else {
         return Err(AppError::Unauthorized);
     };
-    
-    let user = app_state.stores.users.retrieve_user_by_identifier(UserIdentifier::Username(current_user.clone())).await?;    
+
+    let user = app_state.stores.users.retrieve_user_by_identifier(UserIdentifier::Username(current_user.clone())).await?;
     let repository = app_state.stores.repos.retrieve_by_name(&repo_name).await?;
-    let user_id = user.id.clone();
-    let repository_id = repository.id.clone();
     let repo_action = RepoAction::CreateBranch;
     let auth_request = AuthorizationRequest {
-        user, repository, repo_action,
+        user_id: user.id.clone(),
+        owner_id: repository.owner_id.unwrap(),
+        repository_id: repository.id,
+        repo_action,
     };
 
     app_state.services.auth.authorize_repository_action(auth_request).await?;
@@ -157,14 +158,14 @@ pub async fn create_repository_branch(session: Session, State(app_state): State<
     let repo_path = format!("/repos/{}/{}.git", &username, &repo_name);
     let git_repo = GitRepository::open(&repo_path)?;
     git_repo.create_branch(&create_branch_request.new_branch_name, &create_branch_request.base_branch_name, create_branch_request.switch_head)?;
-    
+
     let new_repo_branch = NewRepositoryBranch {
-        creator_id: user_id,
-        repository_id,
+        creator_id: user.id,
+        repository_id: repository.id,
         name: create_branch_request.new_branch_name,
     };
-    app_state.stores.repos.write_repo_branch_to_db(new_repo_branch).await?; 
-    
+    app_state.stores.repos.write_repo_branch_to_db(new_repo_branch).await?;
+
 
     let recently_authorized_key = format!("{}:{}", &username, &repo_name);
     session.insert("recently_authorized_repo", recently_authorized_key).await?;

@@ -10,11 +10,11 @@ use error::AppError;
 pub struct AuthorizationService {
     pub auth_store: Arc<dyn AuthorizationStore>,
     pub user_store: Arc<dyn UserStore>,
-    repo_store: Arc<dyn RepositoryStore>
+    pub repo_store: Arc<dyn RepositoryStore>
 }
 
 impl AuthorizationService {
-    
+
     pub async fn authenticate_and_authorize_user(&self, credentials: Credentials, repository: Repository, repo_action: RepoAction) -> Result<(), AppError> {
         let login_request = LoginRequest {
             identifier: UserIdentifier::Username(credentials.username),
@@ -22,18 +22,19 @@ impl AuthorizationService {
         };
         let user = self.user_store.retrieve_user_by_identifier(login_request.identifier).await?;
         let auth_request = AuthorizationRequest {
-            user,
-            repository,
+            user_id: user.id,
+            owner_id: repository.owner_id.unwrap(),
+            repository_id: repository.id,
             repo_action
         };
         self.authorize_repository_action(auth_request).await?;
         Ok(())
     }
-    
+
     pub async fn authorize_repository_action(&self, auth_request: AuthorizationRequest) -> Result<(), AppError> {
-        let user_id = auth_request.user.id;
-        let repo_id = auth_request.repository.id;
-        if auth_request.repository.owner_id == Some(user_id) {
+        let user_id = auth_request.user_id;
+        let repo_id = auth_request.repository_id;
+        if auth_request.owner_id == user_id {
             return Ok(());
         }
 
