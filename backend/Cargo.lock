@@ -54,12 +54,14 @@ dependencies = [
  "anyhow",
  "application",
  "axum",
+ "axum-extra",
  "axum-macros",
  "deadpool-diesel",
  "domain",
  "error",
  "http",
  "infrastructure",
+ "shared",
  "state",
  "time",
  "tokio",
@@ -83,7 +85,6 @@ dependencies = [
  "domain",
  "error",
  "infrastructure",
- "regex",
  "shared",
  "templating",
  "tokio",
@@ -1632,12 +1633,10 @@ name = "shared"
 version = "0.1.0"
 dependencies = [
  "argon2",
- "axum",
- "domain",
  "error",
- "infrastructure",
  "password-hash",
  "rand_core",
+ "regex",
  "tokio",
 ]
 

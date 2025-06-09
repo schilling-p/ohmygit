@@ -1,13 +1,9 @@
 use axum::Router;
 use axum::routing::{get, post};
 
-use application::repository::git::advertise::handle_info_refs;
-use application::repository::git::push::receive_user_repository;
-use application::repository::git::clone::send_user_repository;
-use application::repository::branch::handler::list_repository_branches;
+use crate::handlers::repository::{ handle_info_refs, send_user_repository, receive_user_repository, create_repository, list_repository_branches};
 use application::repository::branch::handler::create_repository_branch;
-use application::repository::create::create_repository;
-use shared::state::AppState;
+use state::AppState;
 
 pub fn routes(app_state: AppState) -> Router {
     Router::new()

@@ -1,21 +1,29 @@
 use std::path::PathBuf;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::Json;
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_macros::debug_handler;
+use axum_extra::headers::Authorization;
+use axum_extra::headers::authorization::Basic;
+use axum_extra::TypedHeader;
+use http::StatusCode;
 use tokio::fs;
-use regex::Regex;
-use std::sync::LazyLock;
 use tower_sessions::Session;
 use tracing::debug;
-use application::repository::read::list_user_repositories;
+
+use application::repository::git::{GIT_CLONE_PACK, GIT_PUSH_PACK};
+use application::repository::git::format::{build_git_advertisement_response, build_git_pack_response, format_git_advertisement};
+use application::repository::git::run::{run_git_advertise_refs, run_git_pack};
 use domain::ApiResponse;
+use domain::authorization::model::{Credentials, RepoAction, AuthorizationRequest};
+use domain::repository::model::NewRepositoryBranch;
 use domain::request::auth::UserIdentifier;
-use domain::request::repository::CreateRepoRequest;
+use domain::request::repository::{CreateBranchRequest, CreateRepoRequest, InfoRefsQuery};
 use domain::response::repository::RepositoryBranches;
 use state::AppState;
 use error::AppError;
 use infrastructure::git2::GitRepository;
+use shared::regex::is_valid_repo_name;
 
 #[debug_handler]
 pub async fn list_repository_branches(Path((username, repo_name)): Path<(String, String)>) -> Result<ApiResponse, AppError> {
@@ -28,12 +36,6 @@ pub async fn list_repository_branches(Path((username, repo_name)): Path<(String,
 
 #[debug_handler]
 pub async fn create_repository(State(app_state): State<AppState>, session: Session, Json(create_repo_request): Json<CreateRepoRequest>) -> Result<impl IntoResponse, AppError> {
-    // ensure the repo does not already exist - DONE
-    // build repo path - DONE
-    // create a user folder in /repos if missing - DONE
-    // init the bare repository - DONE
-    // create a new struct for the database insertion 
-    // insert repository metadata into the database
     debug!("Got request with: {:?}", create_repo_request);
 
     if !is_valid_repo_name(&create_repo_request.repository_name) {
@@ -68,12 +70,107 @@ pub async fn create_repository(State(app_state): State<AppState>, session: Sessi
     }
 }
 
-static REPO_NAME_REGEX: LazyLock<Regex> = LazyLock::new( || {
-    Regex::new(r"^[a-zA-Z0-9][a-zA-Z0-9_-]{0,31}$").unwrap()
-});
+// test command: GIT_TRACE_PACKET=1 GIT_TRACE=1 git clone http://0.0.0.0:3001/paul/ohmygit.git
+#[debug_handler]
+pub async fn handle_info_refs(
+    State(app_state): State<AppState>,
+    Path((username, repo_name)): Path<(String, String)>,
+    Query(query): Query<InfoRefsQuery>,
+    opt_auth: Option<TypedHeader<Authorization<Basic>>>) -> Result<Response, AppError> {
+    let possible_operations = [GIT_CLONE_PACK.to_string(), GIT_PUSH_PACK.to_string()];
+    if !possible_operations.contains(&query.service) {
+        return Err(AppError::BadRequest(format!("Unsupported service: {:?}", query.service)))
+    }
 
-fn is_valid_repo_name(repo_name: &str) -> bool {
-    REPO_NAME_REGEX.is_match(repo_name)
+    let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name); // use that for the query retrieve_by_name
+    let repo = app_state.stores.repos.retrieve_by_name(&repo_name_no_git).await?;
+    let repo_path = PathBuf::from(format!("{GIT_REPO_PATH}/{}/{}.git", username, repo_name_no_git));
+
+    if repo.is_public && (query.service == GIT_CLONE_PACK) {
+        let output = run_git_advertise_refs(&query.service, repo_path).await?;
+        let formatted_output = format_git_advertisement(&query.service, &output);
+        build_git_advertisement_response(&query.service, formatted_output)
+
+    } else {
+        let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
+        let credentials = Credentials::from(&auth_header);
+        let action = RepoAction::try_from(query.service.as_str())?;
+        app_state.services.auth.authenticate_and_authorize_user(credentials, repo, action).await?;
+        
+
+        let output = run_git_advertise_refs(&query.service, repo_path).await?;
+        let formatted_output = format_git_advertisement(&query.service, &output);
+        build_git_advertisement_response(&query.service, formatted_output)
+    }
 }
 
+#[debug_handler]
+pub async fn send_user_repository(State(app_state): State<AppState>, Path((username, repo_name)): Path<(String, String)>, opt_auth: Option<TypedHeader<Authorization<Basic>>>, body: axum::body::Bytes) -> Result<Response, AppError> {
+    let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
+    let credentials = Credentials::from(&auth_header);
+    let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
+    let repo_path = PathBuf::from(format!("{GIT_REPO_PATH}/{}/{}", username, repo_name_no_git));
+    let repo = app_state.stores.repos.retrieve_by_name(&repo_name_no_git).await?;
+    app_state.services.auth.authenticate_and_authorize_user(credentials, repo, RepoAction::Clone).await?;
 
+    debug!("sending user repository: {:?}", &repo_path);
+    let service: &str = GIT_CLONE_PACK;
+    let output = run_git_pack(&service, repo_path, body).await?;
+    let response = build_git_pack_response(service, output)?;
+
+    Ok(response)
+}
+
+#[debug_handler]
+pub async fn receive_user_repository(State(app_state): State<AppState>, Path((username, repo_name)): Path<(String, String)>, opt_auth: Option<TypedHeader<Authorization<Basic>>>, body: axum::body::Bytes) -> Result<Response, AppError> {
+    let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
+    let repo = app_state.stores.repos.retrieve_by_name(&repo_name_no_git).await?;
+    let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
+    let credentials = Credentials::from(&auth_header);
+    app_state.services.auth.authenticate_and_authorize_user(credentials, repo, RepoAction::Push).await?;
+
+    let repo_path = PathBuf::from(format!("{GIT_REPO_PATH}/{}/{}.git", username, repo_name_no_git));
+
+    let service: String = GIT_PUSH_PACK.to_string();
+    let output = run_git_pack(&service, repo_path, body).await?;
+    let response = build_git_pack_response(&service, output)?;
+    Ok(response)
+}
+
+#[debug_handler]
+pub async fn create_repository_branch(session: Session, State(app_state): State<AppState>, Path((username, repo_name)): Path<(String, String)>, Json(create_branch_request): Json<CreateBranchRequest>) -> Result<impl IntoResponse, AppError> {
+    let Some(current_user) = session.get::<String>("username").await? else {
+        return Err(AppError::Unauthorized);
+    };
+    
+    let user = app_state.stores.users.retrieve_user_by_identifier(UserIdentifier::Username(current_user.clone())).await?;    
+    let repository = app_state.stores.repos.retrieve_by_name(&repo_name).await?;
+    let user_id = user.id.clone();
+    let repository_id = repository.id.clone();
+    let repo_action = RepoAction::CreateBranch;
+    let auth_request = AuthorizationRequest {
+        user, repository, repo_action,
+    };
+
+    app_state.services.auth.authorize_repository_action(auth_request).await?;
+
+    let repo_path = format!("/repos/{}/{}.git", &username, &repo_name);
+    let git_repo = GitRepository::open(&repo_path)?;
+    git_repo.create_branch(&create_branch_request.new_branch_name, &create_branch_request.base_branch_name, create_branch_request.switch_head)?;
+    
+    let new_repo_branch = NewRepositoryBranch {
+        creator_id: user_id,
+        repository_id,
+        name: create_branch_request.new_branch_name,
+    };
+    app_state.stores.repos.write_repo_branch_to_db(new_repo_branch).await?; 
+    
+
+    let recently_authorized_key = format!("{}:{}", &username, &repo_name);
+    session.insert("recently_authorized_repo", recently_authorized_key).await?;
+    debug!("Session has been updated");
+
+    let redirect_url = format!("/repos/{}/{}/branch/{}", username, repo_name, create_branch_request.new_branch_name);
+    debug!("Redirecting to: {}", redirect_url);
+    Ok(StatusCode::OK)
+}

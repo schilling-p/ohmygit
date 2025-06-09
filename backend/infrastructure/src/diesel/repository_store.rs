@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use uuid::Uuid;
 use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, OptionalExtension};
 use diesel::expression_methods::ExpressionMethods;
-use domain::repository::model::{Repository, NewUserRepository};
+use domain::repository::model::{Repository, NewUserRepository, NewRepositoryBranch};
 use domain::repository::store::RepositoryStore;
 use domain::schema::repositories;
 
@@ -48,16 +48,28 @@ impl RepositoryStore for DieselRepositoryStore {
     async fn write_repo_to_db(&self, new_repo: NewUserRepository) -> Result<(), AppError> {
         use domain::schema::repositories::dsl::*;
         let conn = self.pool.get().await.map_err(AppError::from)?;
-        let repo = conn
-            .interact(move |conn| {
+        conn.interact(move |conn| {
                 diesel::insert_into(repositories)
                     .values(new_repo)
-                    .returning(Repository::as_select())
-                    .get_result(conn)
+                    .execute(conn)
             })
         .await
         .map_err(|e| AppError::UnexpectedError(e.to_string()))?
         .map_err(AppError::from)?;
+        Ok(())
+    }
+    
+    async fn write_repo_branch_to_db(&self, new_branch: NewRepositoryBranch) -> Result<(), AppError> {
+        use domain::schema::branches::dsl::*;
+        let conn = self.pool.get().await.map_err(AppError::from)?;
+        conn.interact(move |conn| {
+            diesel::insert_into(branches)
+                .values(new_branch)
+                .execute(conn)
+        })
+            .await
+            .map_err(|e| AppError::UnexpectedError(e.to_string()))?
+            .map_err(AppError::from)?;
         Ok(())
     }
 }

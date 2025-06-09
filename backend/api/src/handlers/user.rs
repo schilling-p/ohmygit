@@ -15,6 +15,7 @@ pub async fn list_users(State(app_state): State<AppState>) -> Result<Json<Vec<Us
     Ok(Json(users))
 }
 
+//TODO: change the return type to Success 201 or something like that
 #[debug_handler]
 pub async fn user_web_signup_handler(State(app_state): State<AppState>, Json(mut new_user): Json<NewUser>) -> Result<Json<User>, AppError> {
     match app_state.services.user.user_signup(new_user).await {
