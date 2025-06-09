@@ -4,19 +4,21 @@ use axum_macros::debug_handler;
 use tower_sessions::Session;
 use application::organizations::read::list_user_organizations;
 use application::repository::read::list_user_repositories;
+use domain::request::auth::UserIdentifier;
 use error::AppError;
 use state::AppState;
 
 #[debug_handler]
 pub async fn dashboard_template(session: Session, State(app_state): State<AppState> ) -> Result< impl IntoResponse, AppError> {
-    let pool = &app_state.db;
+    
     let user_email: Option<String> = session.get("user_email").await?;
     let username: Option<String> = session.get("username").await?;
 
     if let (Some(user_email), Some(username)) = (user_email, username) {
+        let user = app_state.stores.users.retrieve_user_by_identifier(UserIdentifier::Username(username)).await?;
         let template = DashboardTemplate {
-            username,
-            repositories: app_state.services.
+            username: user.username,
+            repositories: app_state.stores.repos.list_user_repositories(user.id).await?,
             organizations: list_user_organizations(&pool, &user_email).await?,
         };
 

@@ -1,11 +1,11 @@
 use async_trait::async_trait;
 use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, OptionalExtension};
 use diesel::expression_methods::ExpressionMethods;
+
 use domain::request::auth::UserIdentifier;
 use domain::schema::users;
 use error::AppError;
-
-use domain::user::{NewUser, User, UserStore};
+pub(crate) use domain::user::{NewUser, User, UserStore};
 use crate::diesel::connection::DbPool;
 
 pub struct DieselUserStore {
@@ -34,13 +34,14 @@ impl UserStore for DieselUserStore {
     async fn retrieve_user_by_identifier(&self, user_identifier: UserIdentifier) -> Result<User, AppError> {
         use domain::schema::users::dsl::*;
         let conn = self.pool.get().await.map_err(AppError::from)?;
-        let id_string = user_identifier.clone().extract();
+        let id_string = user_identifier.clone();
 
         let user: User = conn
             .interact(move |conn| {
                 match user_identifier {
-                    UserIdentifier::Email(_) => users.filter(email.eq(&id_string)).select(User::as_select()).first::<User>(conn),
-                    UserIdentifier::Username(_) => users.filter(username.eq(&id_string)).select(User::as_select()).first::<User>(conn),
+                    UserIdentifier::Email(_) => users.filter(email.eq(&id_string.into())).select(User::as_select()).first::<User>(conn),
+                    UserIdentifier::Username(_) => users.filter(username.eq(&id_string.into())).select(User::as_select()).first::<User>(conn),
+                    UserIdentifier::Id(_) => users.filter(id.eq(&id_string.into())).select(User::as_select()).first::<User>(conn),
                 }
             })
             .await

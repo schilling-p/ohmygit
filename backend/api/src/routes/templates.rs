@@ -1,6 +1,5 @@
 use axum::Router;
 use axum::routing::get;
-use application::templates::dashboard::dashboard_template;
 use application::templates::repository::{repository_template_default, repository_template_for_branch, create_repository_template};
 use shared::state::AppState;
 

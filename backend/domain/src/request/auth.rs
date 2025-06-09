@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
 pub struct LoginRequest {
@@ -9,15 +10,7 @@ pub struct LoginRequest {
 #[derive(Deserialize, Serialize, Debug, PartialEq, Clone)]
 #[serde(tag = "type", content = "value")]
 pub enum UserIdentifier {
+    Id(Uuid),
     Email(String),
     Username(String),
-}
-
-impl UserIdentifier {
-    pub fn extract(self) -> String {
-        match self {
-            UserIdentifier::Email(email) => email,
-            UserIdentifier::Username(username) => username,
-        }
-    }   
 }
