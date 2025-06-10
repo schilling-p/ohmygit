@@ -30,6 +30,7 @@ pub async fn user_web_login_handler(session: Session, State(app_state): State<Ap
         Ok(user) => {
             session.insert("username", user.username.clone()).await?;
             session.insert("user_email", user.email.clone()).await?;
+            session.insert("user_id", user.id.clone()).await?;
 
             Ok(ApiResponse::Login(LoginResponse {
                 message: "login_successful",

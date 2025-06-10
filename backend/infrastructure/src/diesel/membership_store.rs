@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use std::sync::Arc;
-use deadpool_diesel::postgres::Manager;
 use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, BelongingToDsl};
 use diesel::expression_methods::ExpressionMethods;
 use uuid::Uuid;
@@ -9,7 +8,6 @@ use domain::membership::model::OrganizationMember;
 use domain::organization::model::Organization;
 use domain::request::auth::UserIdentifier;
 use domain::schema::organizations::dsl::organizations;
-use domain::user::User;
 use error::AppError;
 use crate::diesel::user_store::UserStore;
 use crate::diesel::connection::DbPool;

@@ -1,3 +1,5 @@
+pub mod git_repository_store;
+
 use git2::{Repository, Error, Commit, Sort, BranchType, Oid};
 use chrono::{DateTime};
 use domain::response::repository::{CommitInformation, RepositoryFileInformation, RepositoryOverview};

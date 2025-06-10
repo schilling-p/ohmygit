@@ -10,7 +10,9 @@ use infrastructure::diesel::repository_store::DieselRepositoryStore;
 use application::user::service::UserService;
 use application::repository::service::RepositoryService;
 use domain::authorization::store::AuthorizationStore;
+use domain::membership::store::MembershipStore;
 use infrastructure::diesel::authorization_store::DieselAuthorizationStore;
+use infrastructure::diesel::membership_store::DieselMembershipStore;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -22,6 +24,7 @@ pub struct AppStores {
     pub users: Arc<dyn UserStore>,
     pub repos: Arc<dyn RepositoryStore>,
     pub auth: Arc<dyn AuthorizationStore>,
+    pub members: Arc<dyn MembershipStore>,
 }
 
 pub struct AppServices {
@@ -34,12 +37,14 @@ pub fn initialize_app_state(db: DbPool) -> AppState {
     let users = Arc::new(DieselUserStore::new(db.clone()));
     let repos = Arc::new(DieselRepositoryStore::new(db.clone()));
     let auth = Arc::new(DieselAuthorizationStore::new(db.clone()));
+    let members = Arc::new(DieselMembershipStore::new(db.clone(), users.clone()));
+    
     let user_service = Arc::new(UserService {user_store: users.clone(),});
     let repo_service = Arc::new(RepositoryService {user_store: users.clone(), repo_store: repos.clone()});
     let auth_service = Arc::new(AuthorizationService { user_store: users.clone(), repo_store: repos.clone(), auth_store: auth.clone() });
     
     AppState {
-        stores: Arc::new(AppStores { users, repos, auth }),
+        stores: Arc::new(AppStores { users, repos, auth, members }),
         services: Arc::new(AppServices { user: user_service, repo: repo_service, auth: auth_service}),
     }
 }

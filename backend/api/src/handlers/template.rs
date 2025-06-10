@@ -2,24 +2,21 @@ use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Response};
 use axum_macros::debug_handler;
 use tower_sessions::Session;
-use application::organizations::read::list_user_organizations;
-use application::repository::read::list_user_repositories;
-use domain::request::auth::UserIdentifier;
+use uuid::Uuid;
+use templating::{DashboardTemplate, CreateRepositoryTemplate};
 use error::AppError;
 use state::AppState;
 
 #[debug_handler]
 pub async fn dashboard_template(session: Session, State(app_state): State<AppState> ) -> Result< impl IntoResponse, AppError> {
-    
-    let user_email: Option<String> = session.get("user_email").await?;
     let username: Option<String> = session.get("username").await?;
+    let user_id: Option<Uuid> = session.get("user_id").await?;
 
-    if let (Some(user_email), Some(username)) = (user_email, username) {
-        let user = app_state.stores.users.retrieve_user_by_identifier(UserIdentifier::Username(username)).await?;
+    if let (Some(username), Some(user_id)) = (username, user_id) {
+        let organizations = app_state.stores.members.list_organizations_for_user(user_id).await?;
+        let repositories = app_state.stores.repos.list_user_repositories(user_id).await?;
         let template = DashboardTemplate {
-            username: user.username,
-            repositories: app_state.stores.repos.list_user_repositories(user.id).await?,
-            organizations: list_user_organizations(&pool, &user_email).await?,
+            username,repositories, organizations,
         };
 
         Ok(Html(template.render()?))
@@ -51,12 +48,11 @@ pub async fn repository_template_for_branch(State(app_state): State<AppState>, P
 }
 
 #[debug_handler]
-pub async fn create_repository_template(State(app_state): State<AppState>, session: Session) -> Result<Response, AppError> {
-    let pool = &app_state.db;
-    let user_email: Option<String> = session.get("user_email").await?;
+pub async fn repository_creation_template(State(app_state): State<AppState>, session: Session) -> Result<Response, AppError> {
+    let user_id: Option<Uuid> = session.get("user_id").await?;
     let username: Option<String> = session.get("username").await?;
-    if let (Some(user_email), Some(username)) = (user_email, username) {
-        let repos: Vec<Repository> = list_user_repositories(&pool, &user_email).await?;
+    if let (Some(user_id), Some(username)) = (user_id, username) {
+        let repos = app_state.stores.repos.list_user_repositories(user_id).await?;
         let mut repo_names = Vec::new();
         for repo in repos.into_iter() {
             repo_names.push(repo.name);

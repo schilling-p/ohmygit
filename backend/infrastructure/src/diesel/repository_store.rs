@@ -4,8 +4,6 @@ use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, OptionalExtension};
 use diesel::expression_methods::ExpressionMethods;
 use domain::repository::model::{Repository, NewUserRepository, NewRepositoryBranch};
 use domain::repository::store::RepositoryStore;
-use domain::schema::repositories;
-
 
 use crate::diesel::connection::DbPool;
 use error::AppError;
