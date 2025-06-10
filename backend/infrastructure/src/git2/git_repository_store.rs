@@ -13,7 +13,7 @@ pub struct Git2RepositoryStore;
 impl GitRepositoryStore for Git2RepositoryStore {
     async fn init_bare(path: &str) -> Result<(), AppError> {
         let path = path.to_string();
-        let repo = spawn_blocking(move || GitRepository::init_bare(path)).await??;
+        spawn_blocking(move || GitRepository::init_bare(path)).await??;
         Ok(())
     }
 
