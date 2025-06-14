@@ -44,8 +44,10 @@ pub async fn create_repository(State(app_state): State<AppState>, session: Sessi
 
     let username: Option<String> = session.get("username").await?;
     if let Some(username) = username {
+        debug!("current username is: {}", username);
         let user = app_state.stores.users.retrieve_user_by_identifier(UserIdentifier::Username(username.clone())).await?;
         let repo_path = format!("/repos/{}/{}.git", &user.username, &create_repo_request.repository_name);
+        debug!("now opening repo at path: {}", &repo_path);
 
         match GitRepository::open(&repo_path) {
             Ok(_) => return Err(AppError::BadRequest("Repository already exists".to_string())),
@@ -58,12 +60,9 @@ pub async fn create_repository(State(app_state): State<AppState>, session: Sessi
         }
 
         app_state.stores.git_repos.as_ref().init_bare(&repo_path).await?;
-
         app_state.services.repo.create_new_user_repository(username, create_repo_request).await?;
 
-        let redirect_url = "/dashboard/".to_string();
-        Ok(Redirect::to(&redirect_url))
-
+        Ok(StatusCode::OK.into_response())
 
     } else {
         Err(AppError::Unauthorized)

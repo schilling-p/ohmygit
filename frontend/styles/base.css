@@ -14,8 +14,17 @@ body {
     min-height: 100vh;
 }
 
-.page-title {
+#page-title {
+    margin: 0;
     color: white;
+}
+
+#page-title :hover {
+    background-color: inherit;
+}
+
+#page-title-a :hover {
+    background-color: inherit;
 }
 
 .navbar {

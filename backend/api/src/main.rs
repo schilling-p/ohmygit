@@ -29,7 +29,7 @@ async fn main() -> anyhow::Result<()>{
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)
-        .with_expiry(Expiry::OnInactivity(Tduration::seconds(10)));
+        .with_expiry(Expiry::OnInactivity(Tduration::seconds(20)));
     let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {"debug, tower_http=debug".into()});
     tracing_subscriber::registry()
         .with(filter)

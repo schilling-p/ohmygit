@@ -25,6 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             if (response.ok) {
                 console.log("Repository created successfully.");
+                window.location.href = `/dashboard/`;
+            }
+            if (response.status === 400) {
+                console.log("Repository already exists.");
             }
 
         } catch (err) {
