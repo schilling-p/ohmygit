@@ -78,20 +78,12 @@ dependencies = [
 name = "application"
 version = "0.1.0"
 dependencies = [
- "askama",
  "axum",
- "axum-extra",
- "axum-macros",
- "chrono",
- "deadpool-diesel",
- "diesel",
  "domain",
  "error",
- "infrastructure",
  "shared",
  "templating",
  "tokio",
- "tower-sessions",
  "tracing",
  "uuid",
 ]
