@@ -22,14 +22,16 @@ pub struct AppState {
     pub services: Arc<AppServices>,
 }
 
+#[derive(Clone)]
 pub struct AppStores {
     pub users: Arc<dyn UserStore>,
     pub repos: Arc<dyn RepositoryStore>,
     pub auth: Arc<dyn AuthorizationStore>,
     pub members: Arc<dyn MembershipStore>,
-    pub git_repos: Arc<Git2RepositoryStore>,
+    pub git_repos: Arc<dyn GitRepositoryStore>,
 }
 
+#[derive(Clone)]
 pub struct AppServices {
     pub user: Arc<UserService>,
     pub repo: Arc<RepositoryService>,

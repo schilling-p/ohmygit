@@ -1,6 +1,6 @@
 use domain::authorization::model::{AuthorizationRequest, RepoAction};
 use domain::request::auth::UserIdentifier;
-use domain::response::repository::{CommitInformation, RepositoryFileInformation, RepositoryOverview};
+//use domain::response::repository::{CommitInformation, RepositoryFileInformation, RepositoryOverview};
 use super::service::RepositoryService;
 use error::AppError;
 use templating::RepositoryTemplate;
@@ -22,22 +22,8 @@ impl RepositoryService {
         }
         
         let repo_path = format!("/repos/{}/{}.git", username, repository_name);
-        //let repo_overview = self.git_store.as_ref().get_repo_overview(&repo_path, branch_name).await?;
-        let commit_information = CommitInformation {
-            commit_message: "testmessage".to_string(),
-            commit_time: "testtime".to_string(),
-        };
-        let file_information = RepositoryFileInformation {
-            file_name: "testfilename".to_string(),
-            last_commit_time: "yesterday".to_string(),
-            last_commit_message: "testcommitmessage".to_string(),
-        };
-        let repo_overview = RepositoryOverview {
-            repository_name: "testname".to_string(),
-            head_branch_name: "testbranch".to_string(),
-            latest_commit: commit_information,
-            files: vec![file_information],
-        };
+        let repo_overview = self.git_store.as_ref().get_repo_overview(&repo_path, Option::from(&branch_name)).await?;
+        
         let template = RepositoryTemplate {
             repository_name,
             username,

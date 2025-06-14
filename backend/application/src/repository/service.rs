@@ -8,6 +8,6 @@ use crate::authorization::service::AuthorizationService;
 pub struct RepositoryService {
     pub repo_store: Arc<dyn RepositoryStore>,
     pub user_store: Arc<dyn UserStore>,
-    pub git_store: Arc<Git2RepositoryStore>,
+    pub git_store: Arc<dyn GitRepositoryStore>,
     pub auth_service: Arc<AuthorizationService>
 }

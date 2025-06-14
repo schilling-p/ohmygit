@@ -1,11 +1,10 @@
-use async_trait::async_trait;
 use error::AppError;
 use crate::response::repository::RepositoryOverview;
+use std::pin::Pin;
 
-#[async_trait]
 pub trait GitRepositoryStore: Send + Sync {
-    async fn init_bare(path: &str) -> Result<(), AppError>;
-    async fn list_local_branches(path: &str) -> Result<Vec<String>, AppError>;
-    async fn create_branch(path: &str, new_branch: &str, base_branch: &str, switch_head: bool) -> Result<(), AppError>;
-    async fn get_repo_overview(path: &str, branch_name: Option<String>) -> Result<RepositoryOverview, AppError>;
+    fn init_bare<'a>(&'a self, path: &'a str) -> Pin<Box<dyn Future<Output = Result<(), AppError>> + Send + 'a>>;
+    fn list_local_branches<'a>(&'a self, path: &'a str) -> Pin<Box<dyn Future<Output = Result<Vec<String>, AppError>> + Send + 'a>>;
+    fn create_branch<'a>(&'a self, path: &'a str, new_branch: &'a str, base_branch: &'a str, switch_head: bool) -> Pin<Box<dyn Future<Output = Result<(), AppError>> + Send + 'a>>;
+    fn get_repo_overview<'a>(&'a self, path: &'a str, branch_name: Option<&'a String>) -> Pin<Box<dyn Future<Output = Result<RepositoryOverview, AppError>> + Send + 'a>>;
 }

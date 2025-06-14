@@ -11,7 +11,7 @@ use tokio::fs;
 use tower_sessions::Session;
 use tracing::debug;
 
-use application::repository::git::{GIT_CLONE_PACK, GIT_PUSH_PACK};
+use application::repository::git::{GIT_CLONE_PACK, GIT_PUSH_PACK, GIT_REPO_PATH};
 use application::repository::git::format::{build_git_advertisement_response, build_git_pack_response, format_git_advertisement};
 use application::repository::git::run::{run_git_advertise_refs, run_git_pack};
 use domain::ApiResponse;
@@ -29,9 +29,7 @@ use shared::regex::is_valid_repo_name;
 pub async fn list_repository_branches(State(app_state): State<AppState>, Path((username, repo_name)): Path<(String, String)>) -> Result<ApiResponse, AppError> {
     // TODO: figure out why this does not check the session, does no auth at all
     let repo_path = format!("/repos/{}/{}.git", username, repo_name);
-    let branchvec = vec!["test".to_string()];
-    // app_state.stores.git_repos.as_ref().list_local_branches().await?
-    let branches = RepositoryBranches {branches: branchvec};
+    let branches = RepositoryBranches {branches: app_state.stores.git_repos.as_ref().list_local_branches(&repo_path).await?};
 
     Ok(ApiResponse::RepositoryBranches(branches))
 }
@@ -59,11 +57,11 @@ pub async fn create_repository(State(app_state): State<AppState>, session: Sessi
             fs::create_dir_all(&user_directory).await?;
         }
 
-        //app_state.stores.git_repos.as_ref().init_bare(&repo_path).await?;
+        app_state.stores.git_repos.as_ref().init_bare(&repo_path).await?;
 
         app_state.services.repo.create_new_user_repository(username, create_repo_request).await?;
 
-        let redirect_url = format!("/repos/{}/{}", &user.username, &create_repo_request.repository_name);
+        let redirect_url = "/dashboard/".to_string();
         Ok(Redirect::to(&redirect_url))
 
 
@@ -95,7 +93,7 @@ pub async fn handle_info_refs(
 
     } else {
         let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
-        let credentials = Credentials::from(&auth_header);
+        let credentials = Credentials::from(auth_header);
         let action = RepoAction::try_from(query.service.as_str())?;
         app_state.services.auth.authenticate_and_authorize_user(credentials, repo, action).await?;
 
@@ -105,11 +103,10 @@ pub async fn handle_info_refs(
         build_git_advertisement_response(&query.service, formatted_output)
     }
 }
-
 #[debug_handler]
 pub async fn send_user_repository(State(app_state): State<AppState>, Path((username, repo_name)): Path<(String, String)>, opt_auth: Option<TypedHeader<Authorization<Basic>>>, body: axum::body::Bytes) -> Result<Response, AppError> {
     let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
-    let credentials = Credentials::from(&auth_header);
+    let credentials = Credentials::from(auth_header);
     let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
     let repo_path = PathBuf::from(format!("{GIT_REPO_PATH}/{}/{}", username, repo_name_no_git));
     let repo = app_state.stores.repos.retrieve_by_name(&repo_name_no_git).await?;
@@ -128,7 +125,7 @@ pub async fn receive_user_repository(State(app_state): State<AppState>, Path((us
     let repo_name_no_git = repo_name.strip_suffix(".git").unwrap_or(&repo_name);
     let repo = app_state.stores.repos.retrieve_by_name(&repo_name_no_git).await?;
     let auth_header = opt_auth.ok_or(AppError::GitUnauthorized("Missing username or password from authorization header".into()))?;
-    let credentials = Credentials::from(&auth_header);
+    let credentials = Credentials::from(auth_header);
     app_state.services.auth.authenticate_and_authorize_user(credentials, repo, RepoAction::Push).await?;
 
     let repo_path = PathBuf::from(format!("{GIT_REPO_PATH}/{}/{}.git", username, repo_name_no_git));
@@ -140,7 +137,7 @@ pub async fn receive_user_repository(State(app_state): State<AppState>, Path((us
 }
 
 #[debug_handler]
-pub async fn create_repository_branch(session: Session, State(app_state): State<AppState>, Path((username, repo_name)): Path<(String, String)>, Json(create_branch_request): Json<CreateBranchRequest>) -> Result<impl IntoResponse, AppError> {
+pub async fn create_repository_branch(State(app_state): State<AppState>, session: Session,  Path((username, repo_name)): Path<(String, String)>, Json(create_branch_request): Json<CreateBranchRequest>) -> Result<impl IntoResponse, AppError> {
     let Some(current_user) = session.get::<String>("username").await? else {
         return Err(AppError::Unauthorized);
     };
@@ -159,12 +156,12 @@ pub async fn create_repository_branch(session: Session, State(app_state): State<
 
     let repo_path = format!("/repos/{}/{}.git", &username, &repo_name);
     //let git_repo = GitRepository::open(&repo_path)?;
-    //app_state.stores.git_repos.as_ref().create_branch(&create_branch_request.new_branch_name, &create_branch_request.base_branch_name, create_branch_request.switch_head).await?;
+    app_state.stores.git_repos.as_ref().create_branch(&repo_path, &create_branch_request.new_branch_name, &create_branch_request.base_branch_name, create_branch_request.switch_head).await?;
 
     let new_repo_branch = NewRepositoryBranch {
         creator_id: user.id,
         repository_id: repository.id,
-        name: create_branch_request.new_branch_name,
+        name: create_branch_request.new_branch_name.clone(),
     };
     app_state.stores.repos.write_repo_branch_to_db(new_repo_branch).await?;
 
