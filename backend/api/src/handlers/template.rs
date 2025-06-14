@@ -2,6 +2,7 @@ use axum::extract::{Path, State};
 use axum::response::{Html, IntoResponse, Response};
 use axum_macros::debug_handler;
 use tower_sessions::Session;
+use tracing::debug;
 use uuid::Uuid;
 use templating::{DashboardTemplate, CreateRepositoryTemplate};
 use error::AppError;
@@ -27,27 +28,6 @@ pub async fn dashboard_template(session: Session, State(app_state): State<AppSta
 }
 
 #[debug_handler]
-pub async fn repository_template_default(State(app_state): State<AppState>, Path((username, repository_name)): Path<(String, String)>, session: Session) -> Result<Response, AppError> {
-    let Some(current_user) = session.get::<String>("username").await? else {
-        return Err(AppError::Unauthorized);
-    };
-
-    let pool = &app_state.db;
-    let branch_name = None;
-    create_repository_view(pool, current_user, repository_name, branch_name, session).await
-}
-
-#[debug_handler]
-pub async fn repository_template_for_branch(State(app_state): State<AppState>, Path((username, repository_name, branch_name)): Path<(String, String, String)>, session: Session) -> Result<Response, AppError> {
-    let Some(current_user) = session.get::<String>("username").await? else {
-        return Err(AppError::Unauthorized);
-    };
-    let pool = &app_state.db;
-    let branch_name = Some(branch_name);
-    create_repository_view(pool, current_user, repository_name, branch_name, session).await
-}
-
-#[debug_handler]
 pub async fn repository_creation_template(State(app_state): State<AppState>, session: Session) -> Result<Response, AppError> {
     let user_id: Option<Uuid> = session.get("user_id").await?;
     let username: Option<String> = session.get("username").await?;
@@ -68,3 +48,44 @@ pub async fn repository_creation_template(State(app_state): State<AppState>, ses
         Err(AppError::Unauthorized)
     }
 }
+
+#[debug_handler]
+pub async fn repository_template_default(State(app_state): State<AppState>, Path((username, repository_name)): Path<(String, String)>, session: Session) -> Result<Response, AppError> {
+    let Some(current_user) = session.get::<String>("username").await? else {
+        return Err(AppError::Unauthorized);
+    };
+
+    let is_recently_authorized: bool = session
+        .get::<String>("recently_authorized_repo")
+        .await?
+        .as_deref()
+        == Some(&format!("{}:{}", username, repository_name));
+    
+    debug!("is_recently_authorized: {:?}", is_recently_authorized);
+    
+    let branch_name = None;    
+    let template = app_state.services.repo.create_repository_view(current_user, repository_name, branch_name, is_recently_authorized).await?;
+    
+    Ok(Html(template.render()?).into_response())
+}
+
+#[debug_handler]
+pub async fn repository_template_for_branch(State(app_state): State<AppState>, Path((username, repository_name, branch_name)): Path<(String, String, String)>, session: Session) -> Result<Response, AppError> {
+    let Some(current_user) = session.get::<String>("username").await? else {
+        return Err(AppError::Unauthorized);
+    };
+    
+    let is_recently_authorized: bool = session
+        .get::<String>("recently_authorized_repo")
+        .await?
+        .as_deref()
+        == Some(&format!("{}:{}", username, repository_name));
+
+    debug!("is_recently_authorized: {:?}", is_recently_authorized);
+    
+    let branch_name = Some(branch_name);
+    let template = app_state.services.repo.create_repository_view(current_user, repository_name, branch_name, is_recently_authorized).await?;
+
+    Ok(Html(template.render()?).into_response())
+}
+

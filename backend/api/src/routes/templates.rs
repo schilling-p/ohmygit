@@ -2,7 +2,7 @@ use axum::Router;
 use axum::routing::get;
 use state::AppState;
 
-use crate::handlers::template::{dashboard_template, repository_creation_template};
+use crate::handlers::template::{dashboard_template, repository_creation_template, repository_template_default, repository_template_for_branch};
 
 pub fn routes(app_state: AppState) -> Router {
     Router::new()

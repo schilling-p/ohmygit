@@ -4,7 +4,7 @@ mod repository;
 mod templates;
 
 use axum::Router;
-use shared::state::AppState;
+use state::AppState;
 
 pub fn create_routes(app_state: AppState) -> Router {
     Router::new()

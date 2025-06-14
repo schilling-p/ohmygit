@@ -26,13 +26,15 @@ use infrastructure::git2::GitRepository;
 use shared::regex::is_valid_repo_name;
 
 #[debug_handler]
-pub async fn list_repository_branches(Path((username, repo_name)): Path<(String, String)>) -> Result<ApiResponse, AppError> {
+pub async fn list_repository_branches(State(app_state): State<AppState>, Path((username, repo_name)): Path<(String, String)>) -> Result<ApiResponse, AppError> {
     // TODO: figure out why this does not check the session, does no auth at all
     let repo_path = format!("/repos/{}/{}.git", username, repo_name);
-    let git_repo = GitRepository::open(&repo_path)?;
-    let branches = RepositoryBranches {branches: git_repo.list_local_branches()?};
-    Ok(ApiResponse::RepositoryBranches(branches))
+    let branches = RepositoryBranches {branches: app_state.stores.git_repos.as_ref().list_local_branches().await?};
+
+        Ok(ApiResponse::RepositoryBranches(branches))
 }
+
+// git_repo.list_local_branches()?
 
 #[debug_handler]
 pub async fn create_repository(State(app_state): State<AppState>, session: Session, Json(create_repo_request): Json<CreateRepoRequest>) -> Result<impl IntoResponse, AppError> {
@@ -57,7 +59,7 @@ pub async fn create_repository(State(app_state): State<AppState>, session: Sessi
             fs::create_dir_all(&user_directory).await?;
         }
 
-        GitRepository::init_bare(&repo_path)?;
+        app_state.stores.git_repos.as_ref().list_local_branches().init_bare(&repo_path).await?;
 
         app_state.services.repo.create_new_user_repository(username, create_repo_request).await?;
 
@@ -156,8 +158,8 @@ pub async fn create_repository_branch(session: Session, State(app_state): State<
     app_state.services.auth.authorize_repository_action(auth_request).await?;
 
     let repo_path = format!("/repos/{}/{}.git", &username, &repo_name);
-    let git_repo = GitRepository::open(&repo_path)?;
-    git_repo.create_branch(&create_branch_request.new_branch_name, &create_branch_request.base_branch_name, create_branch_request.switch_head)?;
+    //let git_repo = GitRepository::open(&repo_path)?;
+    app_state.stores.git_repos.as_ref().create_branch(&create_branch_request.new_branch_name, &create_branch_request.base_branch_name, create_branch_request.switch_head).await?;
 
     let new_repo_branch = NewRepositoryBranch {
         creator_id: user.id,
