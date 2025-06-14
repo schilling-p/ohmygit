@@ -12,6 +12,7 @@ use std::io::Error as IoError;
 pub enum AppError {
     NotFound(String),
     EmailAlreadyExists,
+    UserAlreadyExists,
     RepositoryAlreadyExists,
     DatabaseError(DieselError),
     UnexpectedError(String),
@@ -115,6 +116,10 @@ impl IntoResponse for AppError {
             }
             AppError::EmailAlreadyExists => {
                 let body = Json(json!({"error": "email_already_exists"}));
+                (StatusCode::CONFLICT, body).into_response()
+            }
+            AppError::UserAlreadyExists => {
+                let body = Json(json!({"error": "username_already_exists"}));
                 (StatusCode::CONFLICT, body).into_response()
             }
             AppError::RepositoryAlreadyExists => {

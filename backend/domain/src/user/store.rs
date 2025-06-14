@@ -7,5 +7,6 @@ use crate::user::model::{User, NewUser};
 pub trait UserStore: Send + Sync {
     async fn list_users(&self) -> Result<Vec<User>, AppError>;
     async fn retrieve_user_by_identifier(&self, user_identifier: UserIdentifier) -> Result<User, AppError>;
+    async fn retrieve_user_by_email_and_username(&self, user_email: &str, user_name: &str) -> Result<User, AppError>;
     async fn write_user_to_db(&self, new_user: NewUser) -> Result<User, AppError>;
 }

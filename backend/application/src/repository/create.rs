@@ -9,19 +9,11 @@ impl RepositoryService {
     pub async fn create_new_user_repository(&self, username: String, create_repo_request: CreateRepoRequest) -> Result<(), AppError> {
         let user = self.user_store.retrieve_user_by_identifier(UserIdentifier::Username(username)).await?;
         let repo_name = create_repo_request.repository_name.clone();
-        //TODO: need a better check because people can create repos with the same name
-        match self.repo_store.retrieve_by_name(&repo_name).await {
-            Ok(repo) => {
-                let user_id = user.id;
-                let repo_id = repo.id;
-                if user_id == repo_id {
-                    return Err(AppError::RepositoryAlreadyExists)
-                } else { {} }
-            },
+        match self.repo_store.retrieve_by_owner_and_name(user.id, &repo_name).await {
+            Ok(_) => return Err(AppError::RepositoryAlreadyExists),
             Err(AppError::NotFound(_)) => {},
             Err(e) => return Err{ 0: e },
         }
-
 
         let new_user_repository = NewUserRepository {
             owner_id : user.id,

@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, OptionalExtension};
+use diesel::{RunQueryDsl, SelectableHelper, QueryDsl, OptionalExtension, BoolExpressionMethods};
 use diesel::expression_methods::ExpressionMethods;
 
 use domain::request::auth::UserIdentifier;
@@ -23,18 +23,18 @@ impl UserStore for DieselUserStore {
     async fn list_users(&self) -> Result<Vec<User>, AppError> {
         use domain::schema::users::dsl::*;
         let conn = self.pool.get().await?;
-        let res = conn
+        let user_vec = conn
             .interact(|conn| users.select(User::as_select()).load::<User>(conn))
             .await
             .map_err(|e| AppError::UnexpectedError(e.to_string()))?
             .map_err(AppError::from)?;
-        Ok(res)
+
+        Ok(user_vec)
     }
 
     async fn retrieve_user_by_identifier(&self, user_identifier: UserIdentifier) -> Result<User, AppError> {
         use domain::schema::users::dsl::*;
         let conn = self.pool.get().await.map_err(AppError::from)?;
-        //let id_string = user_identifier.clone();
 
         let user: User = conn
             .interact(move |conn| {
@@ -57,6 +57,20 @@ impl UserStore for DieselUserStore {
         Ok(user)
     }
 
+    async fn retrieve_user_by_email_and_username(&self, user_email: &str, user_name: &str) -> Result<User, AppError> {
+        use domain::schema::users::dsl::*;
+        let conn = self.pool.get().await.map_err(AppError::from)?;
+        let user_email = user_email.to_owned();
+        let user_name = user_name.to_owned();
+        let user: User = conn
+            .interact(move |conn| users.filter(email.eq(user_email).and(username.eq(user_name))).select(User::as_select()).first::<User>(conn))
+            .await
+            .map_err(|e| AppError::UnexpectedError(e.to_string()))?
+            .map_err(AppError::from)?;
+
+        Ok(user)
+    }
+
     async fn write_user_to_db(&self, new_user: NewUser) -> Result<User, AppError> {
         let conn = self.pool.get().await.map_err(AppError::from)?;
         let user = conn
@@ -69,6 +83,7 @@ impl UserStore for DieselUserStore {
             .await
             .map_err(|e| AppError::UnexpectedError(e.to_string()))?
             .map_err(AppError::from)?;
+        
         Ok(user)
     }
 }

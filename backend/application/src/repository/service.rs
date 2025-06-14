@@ -2,7 +2,6 @@ use std::sync::Arc;
 use domain::repository::git_store::GitRepositoryStore;
 use domain::repository::store::RepositoryStore;
 use domain::user::UserStore;
-use infrastructure::git2::git_repository_store::Git2RepositoryStore;
 use crate::authorization::service::AuthorizationService;
 
 pub struct RepositoryService {
