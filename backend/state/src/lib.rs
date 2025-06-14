@@ -27,7 +27,7 @@ pub struct AppStores {
     pub repos: Arc<dyn RepositoryStore>,
     pub auth: Arc<dyn AuthorizationStore>,
     pub members: Arc<dyn MembershipStore>,
-    pub git_repos: Arc<dyn GitRepositoryStore>,
+    pub git_repos: Arc<Git2RepositoryStore>,
 }
 
 pub struct AppServices {

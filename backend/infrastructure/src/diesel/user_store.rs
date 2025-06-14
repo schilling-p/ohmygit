@@ -34,14 +34,20 @@ impl UserStore for DieselUserStore {
     async fn retrieve_user_by_identifier(&self, user_identifier: UserIdentifier) -> Result<User, AppError> {
         use domain::schema::users::dsl::*;
         let conn = self.pool.get().await.map_err(AppError::from)?;
-        let id_string = user_identifier.clone();
+        //let id_string = user_identifier.clone();
 
         let user: User = conn
             .interact(move |conn| {
-                match user_identifier {
-                    UserIdentifier::Email(_) => users.filter(email.eq(&id_string.into())).select(User::as_select()).first::<User>(conn),
-                    UserIdentifier::Username(_) => users.filter(username.eq(&id_string.into())).select(User::as_select()).first::<User>(conn),
-                    UserIdentifier::Id(_) => users.filter(id.eq(&id_string.into())).select(User::as_select()).first::<User>(conn),
+                match &user_identifier {
+                    UserIdentifier::Email(email_str) => {
+                        users.filter(email.eq(email_str)).first::<User>(conn)
+                    }
+                    UserIdentifier::Username(username_str) => {
+                        users.filter(username.eq(username_str)).first::<User>(conn)
+                    }
+                    UserIdentifier::Id(uuid) => {
+                        users.filter(id.eq(uuid)).first::<User>(conn)
+                    }
                 }
             })
             .await
