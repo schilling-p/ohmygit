@@ -10,9 +10,9 @@ use git2::{Error, BranchType};
 pub struct Git2RepositoryStore;
 
 impl GitRepositoryStore for Git2RepositoryStore {
-    fn init_bare<'a>(&'a self, path: &'a str) -> Pin<Box<dyn Future<Output = Result<(), AppError>> + Send + 'a>> {
+    fn init_bare<'a>(&'a self, path: &'a str) -> Pin<Box<dyn Future<Output = Result<(), AppError>> + Send + 'static>> {
+        let path = path.to_string();
         Box::pin(async move {
-            let path = path.to_string();
             spawn_blocking(move || {
                 git2::Repository::init_bare(path)?;
                 Ok(())
@@ -20,7 +20,7 @@ impl GitRepositoryStore for Git2RepositoryStore {
         })
     }
 
-    fn list_local_branches<'a>(&'a self, path: &'a str) -> Pin<Box<dyn Future<Output = Result<Vec<String>, AppError>> + Send + 'a>> {
+    fn list_local_branches<'a>(&'a self, path: &'a str) -> Pin<Box<dyn Future<Output = Result<Vec<String>, AppError>> + Send + 'static>> {
         let path = path.to_string();
         Box::pin(async move {
             let branches = spawn_blocking(move || -> Result<Vec<String>, AppError> {
@@ -38,8 +38,7 @@ impl GitRepositoryStore for Git2RepositoryStore {
         })        
     }
 
-
-    fn create_branch<'a>(&'a self, path: &'a str, new_branch: &'a str, base_branch: &'a str, switch_head: bool) -> Pin<Box<dyn Future<Output = Result<(), AppError>> + Send + 'a>> {
+    fn create_branch<'a>(&'a self, path: &'a str, new_branch: &'a str, base_branch: &'a str, switch_head: bool) -> Pin<Box<dyn Future<Output = Result<(), AppError>> + Send + 'static>> {
         let path = path.to_string();
         let new_branch = new_branch.to_string();
         let base_branch = base_branch.to_string();
@@ -60,7 +59,7 @@ impl GitRepositoryStore for Git2RepositoryStore {
         })
     }
 
-    fn get_repo_overview<'a>(&'a self, path: &'a str, branch_name: Option<&'a String>) -> Pin<Box<dyn Future<Output = Result<RepositoryOverview, AppError>> + Send + 'a>> {
+    fn get_repo_overview<'a>(&'a self, path: &'a str, branch_name: Option<&'a String>) -> Pin<Box<dyn Future<Output = Result<RepositoryOverview, AppError>> + Send + 'static>> {
         let path = path.to_string();
         let branch_name = branch_name.map(|name| name.to_owned());
 

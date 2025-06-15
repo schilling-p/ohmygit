@@ -6,5 +6,6 @@ pub mod repository;
 pub mod authorization;
 pub mod membership;
 pub mod organization;
+mod tests;
 
 pub use response::ApiResponse;

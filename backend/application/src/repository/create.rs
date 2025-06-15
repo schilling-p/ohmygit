@@ -1,9 +1,8 @@
-use domain::repository::model::{NewUserRepository, Repository};
+use domain::repository::model::NewUserRepository;
 use domain::request::auth::UserIdentifier;
 use domain::request::repository::CreateRepoRequest;
 use super::service::RepositoryService;
 use error::AppError;
-use uuid::Uuid;
 
 impl RepositoryService {
     pub async fn create_new_user_repository(&self, username: String, create_repo_request: CreateRepoRequest) -> Result<(), AppError> {

@@ -11,5 +11,8 @@ templating = { path = "../templating" }
 
 tokio = { version = "1.45.0", features = ["full"] }
 axum = "0.8.4"
+async-trait = "0.1.88"
 tracing = "0.1.41"
-uuid = { version = "1.16.0", features = ["v7"] }
+chrono = { version = "0.4.40", features = ["serde"] }
+uuid = { version = "1.16.0", features = ["v7", "v4"] }
+mockall = "0.13.1"

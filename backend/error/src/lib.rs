@@ -37,7 +37,7 @@ impl From<IoError> for AppError {
 }
 
 impl From<SessionError> for AppError {
-    fn from(err: SessionError) -> Self {
+    fn from(_err: SessionError) -> Self {
         AppError::Unauthorized
     }
 }
