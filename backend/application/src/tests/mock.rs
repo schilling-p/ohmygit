@@ -1,5 +1,6 @@
 use std::pin::Pin;
 use std::future::Future;
+use std::path::Path;
 use uuid::Uuid;
 use async_trait::async_trait;
 
@@ -11,6 +12,7 @@ use domain::repository::store::RepositoryStore as IRepositoryStore;
 use domain::repository::git_store::GitRepositoryStore as IGitRepositoryStore;
 use domain::response::repository::RepositoryOverview;
 use domain::user::store::UserStore as IUserStore;
+use domain::filesystem::FileSystem as IFileSystem;
 use error::AppError;
 
 mockall::mock! {
@@ -55,5 +57,15 @@ mockall::mock! {
         fn list_local_branches<'a>(&'a self, path: &'a str) -> Pin<Box<dyn Future<Output = Result<Vec<String>, AppError>> + Send + 'static>>;
         fn create_branch<'a>(&'a self, path: &'a str, new_branch: &'a str, base_branch: &'a str, switch_head: bool) -> Pin<Box<dyn Future<Output = Result<(), AppError>> + Send + 'static>>;
         fn get_repo_overview<'a>(&'a self, path: &'a str, branch_name: Option<&'a String>) -> Pin<Box<dyn Future<Output = Result<RepositoryOverview, AppError>> + Send + 'static>>;
+    }
+}
+
+mockall::mock! {
+    pub FileSystem {}
+
+    #[async_trait]
+    impl IFileSystem for FileSystem {
+        async fn try_exists(&self, path: &Path) -> Result<bool, AppError>;
+        async fn create_dir_all(&self, path: &Path) -> Result<(), AppError>;
     }
 }

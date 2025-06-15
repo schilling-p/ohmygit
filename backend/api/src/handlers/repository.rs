@@ -1,13 +1,12 @@
 use std::path::PathBuf;
 use axum::extract::{Path, Query, State};
 use axum::Json;
-use axum::response::{Html, IntoResponse, Redirect, Response};
+use axum::response::{IntoResponse, Response};
 use axum_macros::debug_handler;
 use axum_extra::headers::Authorization;
 use axum_extra::headers::authorization::Basic;
 use axum_extra::TypedHeader;
 use http::StatusCode;
-use tokio::fs;
 use tower_sessions::Session;
 use tracing::debug;
 
@@ -45,8 +44,7 @@ pub async fn create_repository(State(app_state): State<AppState>, session: Sessi
     let username: Option<String> = session.get("username").await?;
     if let Some(username) = username {
         debug!("current username is: {}", username);
-        let user = app_state.stores.users.retrieve_user_by_identifier(UserIdentifier::Username(username.clone())).await?;
-        let repo_path = format!("/repos/{}/{}.git", &user.username, &create_repo_request.repository_name);
+        let repo_path = format!("/repos/{}/{}.git", &username, &create_repo_request.repository_name);
         debug!("now opening repo at path: {}", &repo_path);
 
         match GitRepository::open(&repo_path) {
@@ -54,12 +52,6 @@ pub async fn create_repository(State(app_state): State<AppState>, session: Sessi
             Err(_) => {},
         }
 
-        let user_directory = PathBuf::from(format!("/repos/{}", &user.username));
-        if !fs::try_exists(&user_directory).await? {
-            fs::create_dir_all(&user_directory).await?;
-        }
-
-        app_state.stores.git_repos.as_ref().init_bare(&repo_path).await?;
         app_state.services.repo.create_new_user_repository(username, create_repo_request).await?;
 
         Ok(StatusCode::OK.into_response())

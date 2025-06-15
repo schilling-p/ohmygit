@@ -10,7 +10,7 @@ use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
 use tower_http::cors::CorsLayer;
 use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 
-use infrastructure::diesel::connection::{init_pool, run_migrations, DbPool};
+use infrastructure::diesel::connection::{init_pool, run_migrations};
 use shared::graceful::shutdown_signal;
 use state::AppState;
 

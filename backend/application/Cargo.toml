@@ -16,3 +16,5 @@ tracing = "0.1.41"
 chrono = { version = "0.4.40", features = ["serde"] }
 uuid = { version = "1.16.0", features = ["v7", "v4"] }
 mockall = "0.13.1"
+diesel = "2.2.8"
+git2 = "0.20.2"

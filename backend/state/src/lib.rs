@@ -11,10 +11,12 @@ use infrastructure::diesel::repository_store::DieselRepositoryStore;
 use application::user::service::UserService;
 use application::repository::service::RepositoryService;
 use domain::authorization::store::AuthorizationStore;
+use domain::filesystem::FileSystem;
 use domain::membership::store::MembershipStore;
 use infrastructure::diesel::authorization_store::DieselAuthorizationStore;
 use infrastructure::diesel::membership_store::DieselMembershipStore;
 use infrastructure::git2::git_repository_store::Git2RepositoryStore;
+use infrastructure::filesystem::TokioFileSystem;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -44,10 +46,12 @@ impl AppState {
         let auth = Arc::new(DieselAuthorizationStore::new(db.clone()));
         let members = Arc::new(DieselMembershipStore::new(db.clone(), users.clone()));
         let git_repos = Arc::new(Git2RepositoryStore);
+        let file_system: Arc<dyn FileSystem> = Arc::new(TokioFileSystem);
+
 
         let user_service = Arc::new(UserService {user_store: users.clone(),});
         let auth_service = Arc::new(AuthorizationService { user_store: users.clone(), repo_store: repos.clone(), auth_store: auth.clone() });
-        let repo_service = Arc::new(RepositoryService {user_store: users.clone(), repo_store: repos.clone(), git_store: git_repos.clone(), auth_service: auth_service.clone()});
+        let repo_service = Arc::new(RepositoryService {user_store: users.clone(), repo_store: repos.clone(), git_store: git_repos.clone(), auth_service: auth_service.clone(), file_system: file_system.clone()});
 
         Self {
             stores: Arc::new(AppStores { users, repos, auth, members, git_repos }),

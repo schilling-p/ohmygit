@@ -32,12 +32,13 @@ impl RepositoryStore for DieselRepositoryStore {
         Ok(repo)
     }
     
-    async fn retrieve_by_owner_and_name(&self, owner_id: Uuid, repo_name: &str) -> Result<Repository, AppError> {
+    async fn retrieve_by_owner_and_name(&self, repo_owner_id: Uuid, repo_name: &str) -> Result<Repository, AppError> {
         use domain::schema::repositories::dsl::*;
         let conn = self.pool.get().await.map_err(AppError::from)?;
         let repo_name = repo_name.to_owned();
+        let repo_owner_id = repo_owner_id.to_owned();
         let repo = conn
-            .interact(move |conn| repositories.filter(owner_id.eq(owner_id).and(name.eq(repo_name))).select(Repository::as_select()).first::<Repository>(conn))
+            .interact(move |conn| repositories.filter(owner_id.eq(repo_owner_id).and(name.eq(repo_name))).select(Repository::as_select()).first::<Repository>(conn))
             .await
             .map_err(|e| AppError::UnexpectedError(e.to_string()))?
             .map_err(AppError::from)?;
