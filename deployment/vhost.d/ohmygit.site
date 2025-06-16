@@ -1,25 +1,7 @@
 location / {
-    root /usr/share/nginx/html;
+    proxy_pass http://ohmygit_frontend:80;
     index login.html;
     try_files $uri $uri/ /login.html;
-}
-
-location /script/ {
-    root /usr/share/nginx/html;
-    try_files $uri =404;
-}
-
-location /styles/ {
-    root /usr/share/nginx/html;
-    try_files $uri =404;
-}
-
-location /login.html {
-    try_files $uri =404;
-}
-
-location /signup.html {
-    try_files $uri =404;
 }
 
 location /health/ {
