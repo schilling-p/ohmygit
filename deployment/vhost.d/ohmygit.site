@@ -1,9 +1,3 @@
-location / {
-    proxy_pass http://ohmygit_frontend:80;
-    index login.html;
-    try_files $uri $uri/ /login.html;
-}
-
 location /health/ {
     proxy_pass http://ohmygit_backend:3001/health;
     proxy_set_header Host $host;
