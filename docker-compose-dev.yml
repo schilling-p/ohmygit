@@ -13,10 +13,10 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./frontend/dev
     container_name: ohmygit_frontend
     volumes:
-      - ./frontend:/usr/share/nginx/html
+      - ./frontend/static:/usr/share/nginx/html
     ports:
       - "80:80"
     networks:

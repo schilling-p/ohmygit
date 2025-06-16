@@ -1,0 +1,75 @@
+services:
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./certs:/etc/nginx/certs:ro
+      - ./vhost.d:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+    networks:
+      - web
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    depends_on:
+      - nginx-proxy
+    environment:
+      DEFAULT_EMAIL: paulschilling@posteo.de
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost.d:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+    networks:
+      - web
+
+  frontend:
+    build:
+      context: ./frontend/prod
+    environment:
+      - VIRTUAL_HOST=ohmygit.site,www.ohmygit.site
+      - LETSENCRYPT_HOST=ohmygit.site,www.ohmygit.site
+      - LETSENCRYPT_EMAIL=paulschilling@posteo.de
+    networks:
+      - web
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - VIRTUAL_HOST=git.ohmygit.site
+      - LETSENCRYPT_HOST=git.ohmygit.site
+      - LETSENCRYPT_EMAIL=paulschilling@posteo.de
+      - DATABASE_URL=postgres://admin:password@db:5432/ohmygit
+    depends_on:
+      - db
+    command: ["sh", "-c", "./wait-for-it.sh db:5432 -- /bin/backend"]
+    volumes:
+      - ./git_repos:/repos
+    networks:
+      - web
+      - internal
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: ohmygit
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+
+volumes:
+  pgdata:
+  certs:
+  vhost.d:
+  html:
+
+networks:
+  web:
+  internal:
