@@ -1,0 +1,29 @@
+location / {
+    root /usr/share/nginx/html;
+    index login.html;
+    try_files $uri $uri/ /login.html;
+}
+
+location /script/ {
+    root /usr/share/nginx/html;
+    try_files $uri =404;
+}
+
+location /styles/ {
+    root /usr/share/nginx/html;
+    try_files $uri =404;
+}
+
+location /login.html {
+    try_files $uri =404;
+}
+
+location /signup.html {
+    try_files $uri =404;
+}
+
+location /health/ {
+    proxy_pass http://ohmygit_backend:3001/health;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}

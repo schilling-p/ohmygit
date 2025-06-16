@@ -1,3 +1,8 @@
+location ^~ /.well-known/acme-challenge/ {
+    root /usr/share/nginx/html;
+    allow all;
+}
+
 location / {
     proxy_pass http://ohmygit_backend:3001;
     proxy_set_header Host $host;

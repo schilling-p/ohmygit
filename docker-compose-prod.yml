@@ -39,8 +39,8 @@ services:
       dockerfile: prod/Dockerfile
     container_name: ohmygit_frontend
     environment:
-      - VIRTUAL_HOST=ohmygit.site,www.ohmygit.site
-      - LETSENCRYPT_HOST=ohmygit.site,www.ohmygit.site
+      - VIRTUAL_HOST=ohmygit.site
+      - LETSENCRYPT_HOST=ohmygit.site
       - LETSENCRYPT_EMAIL=paulschilling@posteo.de
     networks:
       - web
