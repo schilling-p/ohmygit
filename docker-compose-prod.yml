@@ -28,7 +28,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend/prod
+      context: ./frontend
+      dockerfile: /prod/Dockerfile
     environment:
       - VIRTUAL_HOST=ohmygit.site,www.ohmygit.site
       - LETSENCRYPT_HOST=ohmygit.site,www.ohmygit.site
