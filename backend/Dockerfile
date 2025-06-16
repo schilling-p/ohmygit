@@ -29,10 +29,10 @@ RUN apt-get update && \
 WORKDIR /app
 
 COPY --from=builder /bin/backend /bin/backend
-COPY wait-for-it.sh /bin/wait-for-it
-RUN chmod +x /bin/wait-for-it
+COPY wait-for-it.sh /bin/wait-for-it.sh
+RUN chmod +x /bin/wait-for-it.sh
 
-ARG UID=10001
+ARG UID=989
 RUN adduser --system \
     --disabled-password \
     --gecos "" \
@@ -47,4 +47,3 @@ USER appuser
 EXPOSE 3001
 
 CMD ["/bin/backend"]
-CMD ["cd .."]

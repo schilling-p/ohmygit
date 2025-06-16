@@ -1,35 +1,42 @@
 services:
   nginx-proxy:
     image: nginxproxy/nginx-proxy
+    container_name: nginx-proxy
+    labels:
+      - com.github.nginx-proxy.nginx-proxy=true
+    environment:
+      - ENABLE_IPV6=false
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./certs:/etc/nginx/certs:ro
-      - ./vhost.d:/etc/nginx/vhost.d
-      - ./html:/usr/share/nginx/html
+      - ./deployment/certs:/etc/nginx/certs:ro
+      - ./deployment/vhost.d:/etc/nginx/vhost.d
+      - ./deployment/html:/usr/share/nginx/html
     networks:
       - web
 
   acme-companion:
     image: nginxproxy/acme-companion
+    container_name: acme-companion
     depends_on:
       - nginx-proxy
     environment:
       DEFAULT_EMAIL: paulschilling@posteo.de
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./certs:/etc/nginx/certs
-      - ./vhost.d:/etc/nginx/vhost.d
-      - ./html:/usr/share/nginx/html
+      - ./deployment/certs:/etc/nginx/certs
+      - ./deployment/vhost.d:/etc/nginx/vhost.d
+      - ./deployment/html:/usr/share/nginx/html
     networks:
       - web
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: /prod/Dockerfile
+      dockerfile: prod/Dockerfile
+    container_name: ohmygit_frontend
     environment:
       - VIRTUAL_HOST=ohmygit.site,www.ohmygit.site
       - LETSENCRYPT_HOST=ohmygit.site,www.ohmygit.site
@@ -40,6 +47,8 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
+    container_name: ohmygit_backend
     environment:
       - VIRTUAL_HOST=git.ohmygit.site
       - LETSENCRYPT_HOST=git.ohmygit.site
@@ -56,6 +65,7 @@ services:
 
   db:
     image: postgres:latest
+    container_name: ohmygit_db
     environment:
       POSTGRES_DB: ohmygit
       POSTGRES_USER: admin

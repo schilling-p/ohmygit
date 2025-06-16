@@ -14,7 +14,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: /dev/Dockerfile
+      dockerfile: dev/Dockerfile
     container_name: ohmygit_frontend
     volumes:
       - ./frontend/static:/usr/share/nginx/html
