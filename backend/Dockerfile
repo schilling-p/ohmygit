@@ -38,7 +38,6 @@ RUN adduser --system \
     --gecos "" \
     --home "/home/appuser" \
     --shell "/usr/sbin/nologin" \
-    --no-create-home \
     --uid "${UID}" \
     appuser
 
