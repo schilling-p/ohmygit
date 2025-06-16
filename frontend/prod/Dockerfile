@@ -1,4 +1,4 @@
 FROM nginx:alpine
 LABEL authors="paulschilling"
 
-COPY ../static /usr/share/nginx/html
+COPY /static /usr/share/nginx/html
