@@ -63,7 +63,6 @@ dependencies = [
  "axum",
  "axum-extra",
  "axum-macros",
- "deadpool-diesel",
  "domain",
  "error",
  "http",
@@ -95,7 +94,6 @@ dependencies = [
  "shared",
  "templating",
  "tokio",
- "tracing",
  "uuid",
 ]
 
@@ -575,7 +573,6 @@ dependencies = [
  "chrono",
  "diesel",
  "error",
- "mockall",
  "serde",
  "uuid",
 ]
