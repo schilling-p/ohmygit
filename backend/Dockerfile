@@ -33,13 +33,16 @@ COPY wait-for-it.sh /bin/wait-for-it.sh
 RUN chmod +x /bin/wait-for-it.sh
 
 ARG UID=989
-RUN adduser --system \
-    --disabled-password \
-    --gecos "" \
-    --home "/home/appuser" \
-    --shell "/usr/sbin/nologin" \
-    --uid "${UID}" \
-    appuser
+ARG GID=989
+RUN addgroup --system --gid "$GID" appgroup && \
+    adduser --system \
+            --disabled-password \
+            --gecos "" \
+            --home "/home/appuser" \
+            --shell "/usr/sbin/nologin" \
+            --uid "$UID" \
+            --gid "$GID" \
+            appuser
 
 USER appuser
 
