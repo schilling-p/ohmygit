@@ -34,7 +34,7 @@ services:
     environment:
       DATABASE_URL: postgres://admin:password@db:5432/ohmygit
       RUST_LOG: debug
-    command: ["sh", "-c", "wait-for-it db:5432 -- /bin/backend"]
+    command: ["sh", "-c", "/bin/wait-for-it.sh db:5432 -- /bin/backend"]
     networks:
       - internal
     volumes:
