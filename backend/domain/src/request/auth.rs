@@ -37,14 +37,3 @@ impl UserIdentifier {
         }
     }
 }
-
-//.interact(move |conn| {
-//match user_identifier {
-//UserIdentifier::Email(_) => {
-//let email_string = id_string;
-//users.filter(email.eq(email_string.as_str())).select(User::as_select()).first::<User>(conn)
-//},
-//UserIdentifier::Username(_) => users.filter(username.eq(&id_string.into())).select(User::as_select()).first::<User>(conn),
-//UserIdentifier::Id(_) => users.filter(id.eq(&id_string.into())).select(User::as_select()).first::<User>(conn),
-//}
-//})
