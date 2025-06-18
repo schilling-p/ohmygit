@@ -1,0 +1,7 @@
+# pack-refs with: peeled fully-peeled sorted 
+efa846ec3211c76ebf65fb417448f00cef9cbf2e refs/heads/authorization
+597acab63dad5cb54261c43baa6f37c0e2b4e333 refs/heads/backend_refactor
+1f060815e23ec94205e93c9741367e054d01bd0f refs/heads/dashboard
+da58d8642eafec2ec66b4291c627647fef836651 refs/heads/duplicates
+41cc01546321c53b9f69ce141459336605f5452a refs/heads/frontend_development
+b49258def35f74cf8f6c221e45f3afe74263c435 refs/heads/master

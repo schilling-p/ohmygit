@@ -58,6 +58,7 @@ Git Clone:
 | `Repository`         | `id`, `owner_id(FK)`, `owner_org_id(FK)`, `name`, `is_public`, `description` |
 | `RepositoryBranch`   | `id`, `creator_id(FK)`, `repository_id(FK)`, `name`                          |
 | `UserRepositoryRoles`| `user_id(FK)`, `repository_id(FK)`, `role`                                   |
+The full database schema can be found in [schema](backend/infrastructure/migrations/2025-04-02-145354_initial_schema/up.sql).
 
 ## Frontend Overview
 - Static login and signup pages in `static/`
@@ -103,6 +104,7 @@ Git Clone:
 ## Setup Instructions
 
 ### Dev Setup
+- make sure that port 80 is open on your system
 ```sh
 # Install Docker
 git clone https://github.com/schilling-p/ohmygit.git
