@@ -105,6 +105,8 @@ The full database schema can be found in [schema](backend/infrastructure/migrati
 
 ### Dev Setup
 - make sure that port 80 is open on your system
+- if you are running Linux use the command sudo chown -R 989:989 git_repos to give the necessary permissions to the backend container
+- after you have created a repository, you can push to it by doing git push http://localhost:3001/<username>/<repo_name.git>
 ```sh
 # Install Docker
 git clone https://github.com/schilling-p/ohmygit.git
@@ -132,7 +134,7 @@ git push origin main
 ### Update Strategy
 ```sh
 git pull
-docker-compose up --build -d
+docker-compose -f <docker-compose-dev or -prod> up --build -d
 # Avoid using `-v` to preserve certificates 
 ```
 
