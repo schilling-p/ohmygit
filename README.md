@@ -77,7 +77,7 @@ The full database schema can be found in [schema](backend/infrastructure/migrati
 
 ## Security
 - TLS via nginx (Let's Encrypt)
-- Backend session management (20s lifespan, in-memory only)
+- Backend session management (60s lifespan, in-memory only)
 - Auth via email/username + password, protected via HTTPS
 - Git auth uses Basic Auth (same credentials)
 - Role-based auth enforced via database lookups

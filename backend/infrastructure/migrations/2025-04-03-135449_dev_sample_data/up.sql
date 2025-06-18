@@ -11,11 +11,11 @@ INSERT INTO organizations (id, name, description, created_at, updated_at) VALUES
 -- Data for Name: users; Type: TABLE DATA; Owner: admin
 --
 
-INSERT INTO users (id, username, email, hashed_pw, created_at, updated_at) VALUES ('c8bf561e-5d0e-4baa-ad59-734debf37bb3', 'paul', 'paul.schilling@code.berlin', '$argon2id$v=19$m=19456,t=2,p=1$3P80ul+evy7MfQ9jDCrAPw$ubpQA6uQx+j7l3FBFuodeeXnf9fQPCqNy7WjlrhXp1k', '2025-04-02 11:51:17.923+00', '2025-04-02 11:51:21.191+00');
-INSERT INTO users (id, username, email, hashed_pw, created_at, updated_at) VALUES ('7d6e9871-639b-472a-b25b-df6b10178f71', 'matilda', 'matilda.junghanns@gmx.net', '$argon2id$v=19$m=19456,t=2,p=1$3P80ul+evy7MfQ9jDCrAPw$ubpQA6uQx+j7l3FBFuodeeXnf9fQPCqNy7WjlrhXp1k', '2025-04-02 11:51:57.59+00', '2025-04-02 11:52:00.56+00');
-INSERT INTO users (id, username, email, hashed_pw, created_at, updated_at) VALUES ('81d7d778-c455-49a5-abe1-3703deb51ed4', 'rupert', 'rupert.junghanns@gmx.de', 'mamaistdiebeste', '2025-04-02 11:52:19.303+00', '2025-04-02 11:52:20.276+00');
-INSERT INTO users (id, username, email, hashed_pw, created_at, updated_at) VALUES ('19530df9-661d-4377-956b-a64cd0fbf18d', 'thomas', 'thomas.frey@code.berlin', 'praisejah', '2025-04-02 11:52:52.532+00', '2025-04-02 11:52:53.312+00');
-INSERT INTO users (id, username, email, hashed_pw, created_at, updated_at) VALUES ('5281a643-a2ab-4c4d-a354-9bd93e707262', 'wessel', 'wessel.weernink@code.berlin', 'iloveswitzerland', '2025-04-02 11:53:19.141+00', '2025-04-02 11:53:19.952+00');
+INSERT INTO users (id, username, email, hashed_pw, created_at, updated_at) VALUES ('c8bf561e-5d0e-4baa-ad59-734debf37bb3', 'paul', 'paul@test.com', '$argon2id$v=19$m=19456,t=2,p=1$3P80ul+evy7MfQ9jDCrAPw$ubpQA6uQx+j7l3FBFuodeeXnf9fQPCqNy7WjlrhXp1k', '2025-04-02 11:51:17.923+00', '2025-04-02 11:51:21.191+00');
+INSERT INTO users (id, username, email, hashed_pw, created_at, updated_at) VALUES ('7d6e9871-639b-472a-b25b-df6b10178f71', 'test', 'test.test@gmx.net', '$argon2id$v=19$m=19456,t=2,p=1$3P80ul+evy7MfQ9jDCrAPw$ubpQA6uQx+j7l3FBFuodeeXnf9fQPCqNy7WjlrhXp1k', '2025-04-02 11:51:57.59+00', '2025-04-02 11:52:00.56+00');
+INSERT INTO users (id, username, email, hashed_pw, created_at, updated_at) VALUES ('81d7d778-c455-49a5-abe1-3703deb51ed4', 'test1', 'test1.test1@gmx.de', 'testpw', '2025-04-02 11:52:19.303+00', '2025-04-02 11:52:20.276+00');
+INSERT INTO users (id, username, email, hashed_pw, created_at, updated_at) VALUES ('19530df9-661d-4377-956b-a64cd0fbf18d', 'test2', 'test2.test2@code.berlin', 'testpw', '2025-04-02 11:52:52.532+00', '2025-04-02 11:52:53.312+00');
+INSERT INTO users (id, username, email, hashed_pw, created_at, updated_at) VALUES ('5281a643-a2ab-4c4d-a354-9bd93e707262', 'test3', 'test3.test3@code.berlin', 'testpw', '2025-04-02 11:53:19.141+00', '2025-04-02 11:53:19.952+00');
 
 
 --
