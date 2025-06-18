@@ -105,7 +105,7 @@ Git Clone:
 ### Dev Setup
 ```sh
 # Install Docker
-git clone https://codeberg.org/your-username/ohmygit.git
+git clone https://github.com/schilling-p/ohmygit.git
 cd ohmygit
 docker-compose -f docker-compose-dev.yml up --build -d
 ```
