@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify(createRepositoryRequest),
             })
-            if (response.ok) {
+            if (response.status === 200) {
                 console.log("Repository created successfully.");
                 window.location.href = `/dashboard/`;
             }

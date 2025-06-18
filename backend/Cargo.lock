@@ -94,6 +94,7 @@ dependencies = [
  "shared",
  "templating",
  "tokio",
+ "tracing",
  "uuid",
 ]
 

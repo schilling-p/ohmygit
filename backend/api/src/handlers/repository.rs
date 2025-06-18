@@ -51,7 +51,7 @@ pub async fn create_repository(State(app_state): State<AppState>, session: Sessi
             Ok(_) => return Err(AppError::BadRequest("Repository already exists".to_string())),
             Err(_) => {},
         }
-
+        
         app_state.services.repo.create_new_user_repository(username, create_repo_request).await?;
 
         Ok(StatusCode::OK.into_response())

@@ -4,6 +4,7 @@ use domain::request::auth::UserIdentifier;
 use domain::request::repository::CreateRepoRequest;
 use super::service::RepositoryService;
 use error::AppError;
+use tracing::debug;
 
 impl RepositoryService {
     pub async fn create_new_user_repository(&self, username: String, create_repo_request: CreateRepoRequest) -> Result<(), AppError> {
@@ -24,13 +25,12 @@ impl RepositoryService {
 
         self.repo_store.write_repo_to_db(new_user_repository).await?;
 
-        
         let user_directory = PathBuf::from(format!("/repos/{}", &username));
         if !self.file_system.try_exists(&user_directory).await? {
             self.file_system.create_dir_all(&user_directory).await?;
         }
 
-        let repo_path = format!("{}/{}.git", username, repo_name);
+        let repo_path = format!("/repos/{}/{}.git", username, repo_name);
         self.git_store.as_ref().init_bare(&repo_path).await?;
 
         Ok(())
