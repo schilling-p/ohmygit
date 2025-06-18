@@ -30,7 +30,7 @@ Software engineers and system administrators looking for a self-hosted, low-depe
 Web Request:
 [Browser] → [nginx] → [Frontend] → [Axum Handler] → [Service Layer] → [Diesel] → [PostgreSQL]
 
-Git Clone:
+Git Clone / Push:
 [Terminal] → [nginx] → [Axum Handler] → [Service Layer] → [git2] → [Filesystem]
 ```
 
@@ -51,7 +51,7 @@ Git Clone:
 - `shared/`: Utilities for hashing, regex, and graceful shutdown
 - `templating/`: HTML templates rendered via Askama
 
-### Data Models
+### Important Data Models
 | Entity                | Fields                                                                       |
 |----------------------|------------------------------------------------------------------------------|
 | `User`               | `id`, `name`, `email`, `hashed_password`                                     |
@@ -105,8 +105,8 @@ The full database schema can be found in [schema](backend/infrastructure/migrati
 
 ### Dev Setup
 - make sure that port 80 is open on your system
-- if you are running Linux use the command sudo chown -R 989:989 git_repos to give the necessary permissions to the backend container
-- after you have created a repository, you can push to it by doing git push http://localhost:3001/<username>/<repo_name.git>
+- if you are running Linux, use the command "sudo chown -R 989:989 git_repos" after cloning the repository to give the necessary permissions to the backend container
+- after you have created a repository, you can push to it and clone from it by doing: git <command> http://localhost:3001/<username>/<repo_name.git>
 ```sh
 # Install Docker
 git clone https://github.com/schilling-p/ohmygit.git
@@ -119,17 +119,19 @@ docker-compose -f docker-compose-dev.yml up --build -d
 # Open in browser
 http://localhost
 
-# Create account, repository, then:
-git clone http://localhost/username/repo.git
-git push origin main
+# Create an account, create a new repository, then:
+git clone http://localhost:3001/username/repo_name.git
+git push http://localhost:3001/username/repo_name.git
 ```
 
 ### Production Setup
 1. Rent a server with ports 80/443 open
 2. Set DNS to point to your IP
 3. Edit `docker-compose-prod.yml` (domain, email, database credentials)
-4. Copy project files to server
-5. Run `docker-compose -f docker-compose-prod.yml up --build -d`
+4. remove the second folder in backend/infrastructure/migrations to not generate sample data in the database
+5. clear the git_repos directory to not have sample repositories in your application 
+6. Copy project files to server
+7. Run `docker-compose -f docker-compose-prod.yml up --build -d`
 
 ### Update Strategy
 ```sh
