@@ -10,11 +10,12 @@ use domain::user::{NewUser, User};
 use state::AppState;
 use error::AppError;
 
-#[debug_handler]
+/*#[debug_handler] for testing purposes:
 pub async fn list_users(State(app_state): State<AppState>) -> Result<Json<Vec<User>>, AppError> {
     let users = app_state.stores.users.list_users().await?;
     Ok(Json(users))
 }
+*/
 
 #[debug_handler]
 pub async fn user_web_signup_handler(session: Session, State(app_state): State<AppState>, Json(new_user): Json<NewUser>) -> Result<Response, AppError> {

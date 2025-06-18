@@ -1,6 +1,5 @@
 use domain::authorization::model::{AuthorizationRequest, RepoAction};
 use domain::request::auth::UserIdentifier;
-//use domain::response::repository::{CommitInformation, RepositoryFileInformation, RepositoryOverview};
 use super::service::RepositoryService;
 use error::AppError;
 use templating::RepositoryTemplate;

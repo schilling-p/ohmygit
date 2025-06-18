@@ -25,7 +25,6 @@ async fn main() -> anyhow::Result<()>{
     let pool = init_pool();
     let app_state = AppState::initialize_app_state(pool);
 
-    // TODO: remove or find better way for production than the current permissive CorsLayer, there is an example in the axum GH repo
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)

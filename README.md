@@ -42,10 +42,10 @@ Git Clone:
 - **git2**: Interfaces directly with Git repositories on disk
 
 ##  Backend Structure
-- `api/`: Application startup and route mounting
-- `application/`: Business logic, service definitions, unit tests
-- `domain/`: Core models and trait interfaces (User, Repository, Branch, Auth, Membership)
-- `infrastructure/`: Database access (Diesel), Git access (git2), migrations
+- `api/`: Application startup, route mounting, request data extraction using handlers
+- `application/`: Business logic, service layer, unit tests
+- `domain/`: Core models and trait interfaces (User, Repository, Branch, Auth, Membership, ...)
+- `infrastructure/`: Database access (Diesel), Git access (git2), filesystem operations, migrations
 - `error/`: App-wide error management using `AppError`
 - `state/`: `AppState` and service initialization
 - `shared/`: Utilities for hashing, regex, and graceful shutdown
@@ -88,7 +88,6 @@ Git Clone:
 
 ## Testing
 - Unit tests for service logic using `cargo test`
-- Tests run inside backend container
 - No integration tests yet
 
 ## Git Repository Management
@@ -97,7 +96,7 @@ Git Clone:
 - Git Smart HTTP used for Git operations like clone and push
 
 ## Limitations & Future Roadmap
-- Planned: Issues, Merge Requests, Comments
+- Planned: Issues, Merge Requests, Comments, PostgreSQL Docker image size optimization, small TODO's in the codebase
 - Not implemented: Web-based editing, CI/CD, Federation
 - No graph database in place, so the current role-based model may not scale for teams > 50 users
 
@@ -136,6 +135,6 @@ docker-compose up --build -d
 ```
 
 ## Contribution
-Licensed under the MIT License. Contributions are welcome via merge requests at:
+This project is licensed under the MIT License. Contributions are welcome via merge requests at:
 
  [GitHub Repository](https://github.com/schilling-p/ohmygit#)

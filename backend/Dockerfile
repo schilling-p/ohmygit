@@ -10,7 +10,6 @@ RUN apt-get update && \
 
 COPY . .
 
-# TODO: change this to release later
 RUN cargo build && \
     cp target/debug/api /bin/backend
 

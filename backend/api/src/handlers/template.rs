@@ -10,7 +10,7 @@ use error::AppError;
 use state::AppState;
 
 #[debug_handler]
-pub async fn dashboard_template(session: Session, State(app_state): State<AppState> ) -> Result< impl IntoResponse, AppError> {
+pub async fn dashboard_template(session: Session, State(app_state): State<AppState> ) -> Result<Response, AppError> {
     let username: Option<String> = session.get("username").await?;
     let user_id: Option<Uuid> = session.get("user_id").await?;
 
@@ -21,7 +21,7 @@ pub async fn dashboard_template(session: Session, State(app_state): State<AppSta
             username,repositories, organizations,
         };
 
-        Ok(Html(template.render()?))
+        Ok(Html(template.render()?).into_response())
 
     } else {
         Err(AppError::Unauthorized)
@@ -89,4 +89,3 @@ pub async fn repository_template_for_branch(State(app_state): State<AppState>, P
 
     Ok(Html(template.render()?).into_response())
 }
-
